@@ -49,23 +49,17 @@ and their relationship with **Life Expectancy**.
 # Repository Structure
 
 ```
-Life-Expectancy-Capstone/
-
+Life-Expectancy-Capstone
 │
-├── data/
-│   └── healthy_lifestyle_city_2021.csv
-│
-├── 01_Data_Wrangling.R
-├── 02_OLS_Model.R
-├── 03_Box_Cox.R
-├── 04_Model_Diagnostics.R
-├── 05_Principal_Component_Analysis.R
-├── 06_Principal_Component_Regression.R
-│
-├── docs/
-│   ├── Documentation_PT-BR.pdf
-│   └── Documentation_EN.pdf
-│
+├── 0-healthy lifestyle city 2021.csv
+├── 1-Data Wrangling.R
+├── 2-OLS Model.R
+├── 3-Box-Cox.R
+├── 4-StepWise-Collinearity-heteroscedasticity.R
+├── 5-PCA-Principal Component Analysis.R
+├── 6-PCR-Principal Component Regression.R
+├── 7-Documentation-PT-BR.pdf
+├── 8-Documentation Translated by Google.pdf
 └── README.md
 ```
 
