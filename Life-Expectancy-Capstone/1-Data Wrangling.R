@@ -89,3 +89,7 @@ df$Gym <- round(df$Gym * 1.15, digits = 2)
 library(dplyr)
 head(df, 5)
 glimpse(df, 5)
+
+# Conclusion
+# The dataset has been cleaned, standardized, and is ready
+# for the statistical analyses developed in this project.
