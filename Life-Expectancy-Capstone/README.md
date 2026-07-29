@@ -152,5 +152,3 @@ Lucas Dutra Mendes
 Electronics Engineer
 
 Postgraduate in Data Science and Machine Learning (USP)
-
-Aspiring Data Engineer
