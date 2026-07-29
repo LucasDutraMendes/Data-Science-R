@@ -41,10 +41,9 @@ str(df_advertising)
 #===============================================================================
 # Correlations                                      
 #===============================================================================
-
-# Understanding the correlation among the attributes with the lines below
-# as sales is the attribute to be studied, it's being removed from the 
-# correlation map.
+# Exploring the correlations among the predictor variables.
+# Since MPG is the response variable, it is excluded from the
+# correlation analysis.
 
 # GGally Package
 df_advertising_sales <- df_advertising[, -4]
@@ -70,7 +69,7 @@ cor(df_advertising$TV, df_advertising$sales)
 chart.Correlation((df_advertising), histogram = TRUE)
 
 # TV CORRELATES .78 WITH SALES, RADIO .58 AND NEWSPAPER .23
-
+# Pairwise correlations alone cannot confirm multicollinearity.
 
 #===============================================================================
 # Multiple Linear Regression - OLS
@@ -94,16 +93,14 @@ summary(linear_model) # R-squared:  0.8972 - p-value: < 2.2e-16
 summary(linear_model)$r.squared
 
 # stats (R Base Package)
-#Confidence Intervals
+# Confidence Intervals
 confint(linear_model, level = 0.95) # significance 5%
 
 #===============================================================================
 # Shapiro-Francia Normality Test
 #===============================================================================
-
-# Shapiro-Francia normality test
-# p-value < 0.05 indicating that the distribution of the data 
-# does not follow a normal distribution
+# p-value < 0.05 indicates that the residuals
+# do not follow a normal distribution.
 
 # nortest Package
 sf.test(linear_model$residuals) # p-value = 2.553e-08 
@@ -120,40 +117,43 @@ sf.test(linear_model$residuals) # p-value = 2.553e-08
 #===============================================================================
 # The Shapiro-Wilk test was performed to assess whether the residuals
 # of the linear regression model follow a normal distribution.
-#
+
 # H0: The residuals are normally distributed.
 # H1: The residuals are not normally distributed.
-#
+
 # W = 0.91767
 # p-value = 3.939e-09
-#
+
 # Since p < 0.05, H0 is rejected.
 # There is strong statistical evidence that the residuals do not follow
 # a normal distribution.
-#
+
 # This result indicates that the normality assumption of the linear
 # regression model is violated. Therefore, a Box-Cox transformation
 # may be considered to improve the normality of the residuals.
 
 # stats (R Base Package)
-shapiro.test(linear_model$residuals) # result not considered p-value = 0.008021
+shapiro.test(linear_model$residuals) # p-value = 0.008021
 
 #===============================================================================
 # Durbin-Watson Autocorrelation Test
 #===============================================================================
-
 # The Durbin-Watson test was performed to evaluate whether the residuals
 # of the linear regression model are autocorrelated.
-#
+
 # Although the Advertising dataset is cross-sectional rather than a time
 # series, this test was included as part of a comprehensive regression
 # diagnostic analysis to verify the independence of the residuals.
-#
-# H0: The residuals are not autocorrelated.
+
+# H0: The residuals are not positively autocorrelated.
 # H1: The residuals are positively autocorrelated.
 
 # lmtest Package  
 dwtest(linear_model) # p-value = 0.7236
+
+# Since p > 0.05, H0 is not rejected.
+# There is no evidence of positive autocorrelation
+# among the residuals.
 
 #===============================================================================
 # Conclusions
@@ -165,8 +165,8 @@ dwtest(linear_model) # p-value = 0.7236
 # Both the Shapiro-Francia and Shapiro-Wilk tests indicated that the
 # residuals do not follow a normal distribution (p < 0.05).
 
-# The Durbin-Watson test found no evidence of autocorrelation among the
-# residuals (DW = 2.0836, p = 0.7236).
+# The Durbin-Watson test indicated no evidence of positive
+# autocorrelation among the residuals (DW = 2.0836, p = 0.7236).
 
 # Based on the normality tests, a Box-Cox transformation will be
 # investigated in the next step to improve the model assumptions.
