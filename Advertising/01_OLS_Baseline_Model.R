@@ -37,25 +37,23 @@ df_advertising <- subset(df_advertising, select = -X)
 summary(df_advertising)
 glimpse(df_advertising)
 str(df_advertising)
+any(is.na(df_advertising))
 
 #===============================================================================
 # Correlations                                      
 #===============================================================================
-# Exploring the correlations among the predictor variables.
-# Since MPG is the response variable, it is excluded from the
-# correlation analysis.
+# Exploring the correlations among variables - including Sales.
 
 # GGally Package
-df_advertising_sales <- df_advertising[, -4]
-ggcorr(df_advertising_sales, label=T)
+ggcorr(df_advertising, label=T)
 
 # stats (R Base Package)
-cor(df_advertising_sales, use = "everything",
+cor(df_advertising, use = "everything",
     method = "pearson") # kendall or spearman
 
 # see (plot) Package
 #Interrelationships among the variables
-df_advertising_sales |> 
+df_advertising |> 
   correlation(method = "pearson",) |> 
   plot()
 
@@ -85,17 +83,32 @@ chart.Correlation((df_advertising), histogram = TRUE)
 
 
 # stats (R Base Package)
-linear_model <- lm(formula = sales ~ . ,
+linear_model_advertising <- lm(formula = sales ~ . ,
                    data = df_advertising)
 
 # stats (R Base Package)
-summary(linear_model) # R-squared:  0.8972 - p-value: < 2.2e-16
-summary(linear_model)$r.squared
+summary(linear_model_advertising) # R-squared:  0.8972 - p-value: < 2.2e-16
+summary(linear_model_advertising)$r.squared
 
 # stats (R Base Package)
 # Confidence Intervals
-confint(linear_model, level = 0.95) # significance 5%
+confint(linear_model_advertising, level = 0.95) # significance 5%
 
+#===============================================================================
+# Multiple Linear Regression - OLS
+#===============================================================================
+# Where does it come from? k = 3.841459?
+qchisq(p = 0.05, df = 1, lower.tail = F)
+round(pchisq(3.841459, df = 1, lower.tail = F),7)
+
+# stats (R Base Package)
+step_lm_advertising <- step(linear_model_advertising, k = 3.841459)
+
+# stats (R Base Package)
+summary(step_lm_advertising) # R-squared:  0.8972 - p-value: < 2.2e-16
+
+# jtools Package
+export_summs(linear_model_advertising, step_lm_advertising )
 #===============================================================================
 # Shapiro-Francia Normality Test
 #===============================================================================
@@ -103,13 +116,15 @@ confint(linear_model, level = 0.95) # significance 5%
 # do not follow a normal distribution.
 
 # nortest Package
-sf.test(linear_model$residuals) # p-value = 2.553e-08 
+sf.test(linear_model_advertising$residuals) # p-value = 2.553e-08 
+sf.test(step_lm_advertising$residuals) # p-value = 2.698e-08
 
 # Shapiro-Francia Normality Test
 # H0: Residuals are normally distributed.
 # H1: Residuals are not normally distributed.
 # W = 0.91439, p-value = 2.553e-08
-# Since p < 0.05, H0 is rejected.
+# w = 0.9148, p-value = 2.698e-08 
+# Since p < 0.05, H0 is rejected for both models
 # The residuals do not follow a normal distribution.
 
 #===============================================================================
@@ -118,22 +133,18 @@ sf.test(linear_model$residuals) # p-value = 2.553e-08
 # The Shapiro-Wilk test was performed to assess whether the residuals
 # of the linear regression model follow a normal distribution.
 
+# stats (R Base Package)
+shapiro.test(linear_model_advertising$residuals) # p-value = 0.008021
+shapiro.test(step_lm_advertising$residuals)
+
 # H0: The residuals are normally distributed.
 # H1: The residuals are not normally distributed.
 
-# W = 0.91767
-# p-value = 3.939e-09
-
-# Since p < 0.05, H0 is rejected.
+# W = 0.91767, p-value = 3.939e-09
+# W = 0.91804, p-value = 4.19e-09
+# Since p < 0.05, H0 is rejected for both models
 # There is strong statistical evidence that the residuals do not follow
 # a normal distribution.
-
-# This result indicates that the normality assumption of the linear
-# regression model is violated. Therefore, a Box-Cox transformation
-# may be considered to improve the normality of the residuals.
-
-# stats (R Base Package)
-shapiro.test(linear_model$residuals) # p-value = 0.008021
 
 #===============================================================================
 # Durbin-Watson Autocorrelation Test
@@ -149,11 +160,69 @@ shapiro.test(linear_model$residuals) # p-value = 0.008021
 # H1: The residuals are positively autocorrelated.
 
 # lmtest Package  
-dwtest(linear_model) # p-value = 0.7236
+dwtest(linear_model_advertising) # DW = 2.0836, p-value = 0.7236
+dwtest(step_lm_advertising)      # DW = 2.0808, p-value = 0.7172
 
-# Since p > 0.05, H0 is not rejected.
+# Since p > 0.05, H0 is not rejected for both models
 # There is no evidence of positive autocorrelation
 # among the residuals.
+
+#===============================================================================
+# Multicollinearity Test
+#===============================================================================
+# The Variance Inflation Factor (VIF) and Tolerance were calculated
+# to assess the presence of multicollinearity among the independent variables.
+
+# Pairwise correlations alone cannot confirm multicollinearity because
+# a predictor may be highly correlated with a combination of other predictors
+# even when individual correlations are relatively low.
+
+# VIF measures how much the variance of a regression coefficient
+# is inflated due to linear relationships among the predictors.
+
+# Tolerance is the reciprocal of VIF and represents the proportion
+# of variance in a predictor that is not explained by the remaining predictors.
+
+# olsrr Package
+ols_vif_tol(linear_model_advertising) # No evidences of multicollinearity
+ols_vif_tol(step_lm_advertising) # No evidences of multicollinearity
+
+# Common guidelines:
+# VIF < 5        -> No evidence of multicollinearity
+# 5 <= VIF < 10 -> Moderate multicollinearity
+# VIF >= 10      -> Severe multicollinearity
+
+# Tolerance > 0.20 -> No evidence of multicollinearity
+# Tolerance < 0.10 -> Potential multicollinearity problem
+
+# Since all VIF values are below 5 and all tolerance values
+# are above 0.20, there is no evidence of multicollinearity
+# among the explanatory variables.
+
+#===============================================================================
+# Heterocedasticity Test
+#===============================================================================
+# The Breusch-Pagan test was performed to assess whether the
+# residual variance is constant across the fitted values.
+
+# Homoskedasticity is one of the assumptions of Ordinary Least Squares (OLS)
+# regression. When this assumption is violated (heteroskedasticity),
+# the estimated coefficients remain unbiased, but the standard errors,
+# confidence intervals, and hypothesis tests may become unreliable.
+
+# H0: The residual variance is constant (homoskedasticity).
+# H1: The residual variance is not constant (heteroskedasticity).
+
+# olsrr Package
+ols_test_breusch_pagan(linear_model_advertising) # Prob > Chi2 = 0.02065131 
+ols_test_breusch_pagan(step_lm_advertising)      # Prob > Chi2 = 0.02065374 
+
+# Since p < 0.05, H0 is rejected for both models.
+# There is statistical evidence of heteroskedasticity,
+# indicating that the residual variance is not constant.
+
+# Robust standard errors may be considered to obtain
+# more reliable statistical inference.
 
 #===============================================================================
 # Conclusions
@@ -168,5 +237,12 @@ dwtest(linear_model) # p-value = 0.7236
 # The Durbin-Watson test indicated no evidence of positive
 # autocorrelation among the residuals (DW = 2.0836, p = 0.7236).
 
-# Based on the normality tests, a Box-Cox transformation will be
-# investigated in the next step to improve the model assumptions.
+# The Variance Inflation Factor (VIF) and Tolerance values indicated
+# no evidence of multicollinearity among the explanatory variables.
+
+# The Breusch-Pagan test indicated evidence of heteroskedasticity
+# (p < 0.05), suggesting that the residual variance is not constant.
+
+# Based on the normality and heteroskedasticity diagnostics,
+# a Box-Cox transformation will be investigated in the next step
+# to improve the model assumptions.
