@@ -23,8 +23,7 @@ lambda_BC_y
 
 # Apply the Box-Cox transformation to the dependent variable.
 df_y_bc <- df_advertising
-df_y_bc$sales <- ((df_advertising$sales ^ lambda_BC_y$lambda) - 1) /
-                    lambda_BC_y$lambda
+df_y_bc$sales <- bcPower(df_y_bc$sales, lambda_BC_y$lambda)
 
 # Fit a new OLS regression model using the Box-Cox transformed variable. 
 bc_y_model <- lm(formula = sales ~ ., 
@@ -85,18 +84,22 @@ lambda_yj_radio
 df_adver_x_transform <- data.frame(sales = df_advertising$sales)
 
 # TV - Box-Cox
-df_adver_x_transform$TV <- ((df_advertising$TV ^ lambda_BC_tv$lambda) - 1) /
-                                lambda_BC_tv$lambda
+df_adver_x_transform$TV <- bcPower(
+  df_adver_x_transform$TV,
+  lambda_BC_tv$lambda
+)
 
 # Radio - Yeo-Johnson
-df_adver_x_transform$radio <- yjPower(df_advertising$radio,
-                                      lambda_yj_radio$lambda)
+df_adver_x_transform$radio <- yjPower(
+  df_adver_x_transform$radio,
+  lambda_yj_radio$lambda
+)
 
 # Newspaper - Box-Cox
-df_adver_x_transform$newspaper <- ((df_advertising$newspaper ^ 
-                                      lambda_BC_newspaper$lambda) - 1) /
-                                      lambda_BC_newspaper$lambda
-
+df_adver_x_transform$newspaper <- bcPower(
+  df_adver_x_transform$newspaper,
+  lambda_BC_newspaper$lambda
+)
 
 # Fit a new OLS regression model using the x transformed variables.
 bc_yj_x_model <- lm(formula = sales ~ .,
