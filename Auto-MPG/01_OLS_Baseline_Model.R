@@ -1,8 +1,9 @@
 #===============================================================================
 # Project: Auto MPG Dataset
 # Script : 01_OLS_Baseline_Model.R
-# Purpose: Build the baseline multiple linear regression model and evaluate
-#          its initial assumptions.
+# Purpose: Build the baseline multiple linear regression model, perform
+#          Stepwise variable selection, and evaluate the final model
+#          assumptions.
 # Author : Lucas Dutra Mendes
 #===============================================================================
 
@@ -29,10 +30,6 @@ df_auto_mpg <- read.csv("auto-mpg.csv")
 
 head(df_auto_mpg, n = 5)
 
-# # Variables excluded from this analysis.
-df_auto_mpg$model.year <- NULL
-df_auto_mpg$origin <- NULL
-
 #------------------------------------------------------------------------------#
 summary(df_auto_mpg)
 glimpse(df_auto_mpg)
@@ -51,8 +48,8 @@ df_auto_mpg$horsepower[df_auto_mpg$horsepower == "?"] <- NA
 # Convert to numeric
 df_auto_mpg$horsepower <- as.numeric(df_auto_mpg$horsepower)
 
-# Manual imputation based on manufacturer specifications
-# obtained from publicly available vehicle information.
+# Missing horsepower values were manually imputed using manufacturer 
+# specifications obtained from publicly available historical vehicle information
 df_auto_mpg$horsepower[df_auto_mpg$car.name == "ford pinto"]           <- 100
 df_auto_mpg$horsepower[df_auto_mpg$car.name == "ford maverick"]        <- 84
 df_auto_mpg$horsepower[df_auto_mpg$car.name == "renault lecar deluxe"] <- 51
@@ -60,35 +57,46 @@ df_auto_mpg$horsepower[df_auto_mpg$car.name == "ford mustang cobra"]   <- 118
 df_auto_mpg$horsepower[df_auto_mpg$car.name == "renault 18i"]          <- 81
 df_auto_mpg$horsepower[df_auto_mpg$car.name == "amc concord dl"]       <- 125
 
-
-df_auto_mpg$car.name <- NULL
-
 #===============================================================================
 # Correlations                                      
 #===============================================================================
 # Exploring the correlations among the predictor variables.
-# Since MPG is the response variable, it is excluded from the
-# correlation analysis.
 
 # GGally Package
-df_auto_mpg_corr <- df_auto_mpg[, -1]
-ggcorr(df_auto_mpg_corr, label=T)
+ggcorr(df_auto_mpg, label=T)
 
-# stats (pacote base do R)
-cor(df_auto_mpg_corr, use = "everything",
+# stats (R Base Package)
+cor(df_auto_mpg, use = "everything",
     method = "pearson") # kendall or spearman
 
 # see (plot) Package
 #Interrelationships among the variables
-df_auto_mpg_corr %>%
+df_auto_mpg %>%
   correlation(method = "pearson",) %>%
   plot()
 
 # PerformanceAnalytics
-#chart correlation
-chart.Correlation((df_auto_mpg_corr), histogram = TRUE)
+# Correlation matrix
+chart.Correlation((df_auto_mpg), histogram = TRUE)
 
 # # Pairwise correlations alone cannot confirm multicollinearity.
+
+#===============================================================================
+# N-1 DUMMIES     
+#===============================================================================
+# Create dummy variables for the categorical predictor 'origin'.
+# The most frequent category is automatically used as the reference level.
+df_auto_mpg_dummies <- dummy_columns(.data = df_auto_mpg,
+                                   select_columns = "origin",
+                                   remove_selected_columns = T,
+                                   remove_most_frequent_dummy = T)
+
+# Visualizing
+df_auto_mpg_dummies %>%
+  kable() %>%
+  kable_styling(bootstrap_options = "striped", 
+                full_width = F, 
+                font_size = 16)
 
 #===============================================================================
 # Multiple Linear Regression - OLS
@@ -100,92 +108,53 @@ chart.Correlation((df_auto_mpg_corr), histogram = TRUE)
 # 2. The sum of the squared residuals is minimized.
 #
 # Multiple Linear Regression Model:
-# mpg = β0 + β1·cylinders + β2·displacement + β3·horsepower + β4·weight + β5·acceleration + ε
+# mpg = β0 + β1·cylinders + β2·displacement + β3·horsepower + β4·weight + 
+# β5·acceleration + β6·model.year + β7·origin_2 + β8·origin_3 + ε
 
 # stats(R Base Package)
-linear_model <- lm(formula = mpg ~ ., 
-                   data = df_auto_mpg)
+mpg_linear_model <- lm(formula = mpg ~ . -car.name, 
+                   data = df_auto_mpg_dummies)
 
 # stats (R Base Package)
-summary(linear_model)
-summary(linear_model$residuals)
+summary(mpg_linear_model) # R-squared: 0.8252 - p-value: < 2.2e-16
+summary(mpg_linear_model$residuals)
 
 # stats (R Base Package)
 # Confidence Intervals
-confint(linear_model, level = 0.95) # significance 5%
+confint(mpg_linear_model, level = 0.95) # significance 5%
 
 #===============================================================================
-# Shapiro-Francia Normality Test
-#===============================================================================
-# p-value < 0.05 indicates that the residuals
-# do not follow a normal distribution.
-
-# nortest Package
-sf.test(linear_model$residuals) # p-value = 2.058e-06
-
-# Shapiro-Francia Normality Test
-# H0: Residuals are normally distributed.
-# H1: Residuals are not normally distributed.
-# W = 0.97106, p-value = 2.058e-06
-# Since p < 0.05, H0 is rejected.
-# The residuals do not follow a normal distribution.
-
-#===============================================================================
-# Shapiro-Wilk Normality Test
-#===============================================================================
-# The Shapiro-Wilk test was performed to assess whether the residuals
-# of the linear regression model follow a normal distribution.
-
-# H0: The residuals are normally distributed.
-# H1: The residuals are not normally distributed.
-#
-# W = 0.97175
-# p-value = 6.724e-07
-
-# Since p < 0.05, H0 is rejected.
-# There is strong statistical evidence that the residuals do not follow
-# a normal distribution.
-
-# This result indicates that the normality assumption of the linear
-# regression model is violated. Therefore, a Box-Cox transformation
-# may be considered to improve the normality of the residuals.
-
-# stats (R Base Package)
-shapiro.test(linear_model$residuals) # p-value = 6.724e-07
-
-#===============================================================================
-# Durbin-Watson Autocorrelation Test
-#===============================================================================
-# The Durbin-Watson test was performed to evaluate whether the residuals
-# are autocorrelated.
-
-# Although the Auto MPG dataset is cross-sectional rather than a time
-# series, this test is included as part of a comprehensive regression
-# diagnostic analysis.
-
-# H0: The residuals are not positively autocorrelated.
-# H1: The residuals are positively autocorrelated.
-
-# lmtest Package  
-dwtest(linear_model) # p-value = 2.2e-16
-
-# Since p < 0.05, H0 is rejected.
-# There is strong statistical evidence of positive autocorrelation
-# among the residuals.
-
-#===============================================================================
-# Conclusions
+# Stepwise Variable Selection
 #===============================================================================
 
-# The baseline multiple linear regression model explained approximately
-# 83.2% of the variance in MPG (R² = 0.8320).
+mpg_step_model <- step(mpg_linear_model, k = 3.841459) #cylinders-aceleration-hp
+
+summary(mpg_step_model) # R-squared:  0.8241, p-value: < 2.2e-16
+summary(mpg_linear_model)
+
+#===============================================================================
+# Normality - Autocorrelation - Multicolinearity - Heterocedasticity - Tests
+#===============================================================================
+
+sf.test(mpg_step_model$residuals) # W = 0.98259, p-value = 0.0002004
+shapiro.test(mpg_step_model$residuals) # W = 0.98348, p-value = 0.0001634
+dwtest(mpg_step_model) # DW = 1.2637, p-value = 2.866e-14
+ols_vif_tol(mpg_step_model) # Evidence of multicollinearity was detected 
+ols_test_breusch_pagan(mpg_step_model) # Prob > Chi2 = 3.526858e-07 
+
+#===============================================================================
+# Pre-Conclusions
+#===============================================================================
+
+# The final model, obtained after the Stepwise variable selection procedure, 
+# explained approximately 82.4% of the variance in MPG (R² = 0.8241).
 
 # Both the Shapiro-Francia and Shapiro-Wilk tests indicated that the
 # residuals do not follow a normal distribution (p < 0.05).
 
 # The Durbin-Watson test indicated significant positive autocorrelation
-# among the residuals (DW = 0.86515, p < 2.2e-16).
+# among the residuals (DW = 1.2637, p-value = 2.866e-14).
 
-# These results suggest that some assumptions of the linear regression
-# model are violated. Additional diagnostic analyses and model
-# improvements will be investigated in the next steps.
+# Evidence of multicollinearity was detected among the explanatory variables.
+
+# The Breusch-Pagan test indicated evidence of heteroskedasticity (p < 0.05).
