@@ -213,9 +213,9 @@ ols_vif_tol(step_lm_advertising) # No evidences of multicollinearity
 # H0: The residual variance is constant (homoskedasticity).
 # H1: The residual variance is not constant (heteroskedasticity).
 
-# olsrr Package
-ols_test_breusch_pagan(linear_model_advertising) # Prob > Chi2 = 0.02065131 
-ols_test_breusch_pagan(step_lm_advertising)      # Prob > Chi2 = 0.02065374 
+# lmtest Package
+bptest(linear_model_advertising) # p-value = 0.1623
+bptest(step_lm_advertising)      # p-value = 0.0903
 
 # Since p < 0.05, H0 is rejected for both models.
 # There is statistical evidence of heteroskedasticity,
@@ -240,8 +240,8 @@ ols_test_breusch_pagan(step_lm_advertising)      # Prob > Chi2 = 0.02065374
 # The Variance Inflation Factor (VIF) and Tolerance values indicated
 # no evidence of multicollinearity among the explanatory variables.
 
-# The Breusch-Pagan test indicated evidence of heteroskedasticity
-# (p < 0.05), suggesting that the residual variance is not constant.
+# The Breusch-Pagan test indicated no evidence of heteroskedasticity
+# (p > 0.05), suggesting that the residual variance is constant.
 
 # Based on the normality and heteroskedasticity diagnostics,
 # a Box-Cox transformation will be investigated in the next step
