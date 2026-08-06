@@ -12,7 +12,7 @@
 #===============================================================================
 
 pacotes <- c("tidyverse","GGally","PerformanceAnalytics","correlation",
-             "see","jtools","visreg", "Rcpp", "car", "nortest", "lmtest")
+             "see","jtools","visreg", "Rcpp", "car", "nortest", "lmtest", "olsrr")
 
 if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
   instalador <- pacotes[!pacotes %in% installed.packages()]
