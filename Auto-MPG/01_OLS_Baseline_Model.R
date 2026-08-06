@@ -140,7 +140,7 @@ sf.test(mpg_step_model$residuals) # W = 0.98259, p-value = 0.0002004
 shapiro.test(mpg_step_model$residuals) # W = 0.98348, p-value = 0.0001634
 dwtest(mpg_step_model) # DW = 1.2637, p-value = 2.866e-14
 ols_vif_tol(mpg_step_model) # Evidence of multicollinearity was detected 
-ols_test_breusch_pagan(mpg_step_model) # Prob > Chi2 = 3.526858e-07 
+bptest(mpg_step_model) # p-value = 1.56e-05
 
 #===============================================================================
 # Pre-Conclusions
