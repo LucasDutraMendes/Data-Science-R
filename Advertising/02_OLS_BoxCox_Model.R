@@ -81,7 +81,12 @@ lambda_yj_radio <- powerTransform(df_advertising$radio,
 lambda_yj_radio
 
 # Creating a new dataframe
-df_adver_x_transform <- data.frame(sales = df_advertising$sales)
+df_adver_x_transform <- data.frame(
+  sales = df_advertising$sales,
+  TV = df_advertising$TV,
+  radio = df_advertising$radio,
+  newspaper = df_advertising$newspaper
+)
 
 # TV - Box-Cox
 df_adver_x_transform$TV <- bcPower(
@@ -103,7 +108,7 @@ df_adver_x_transform$newspaper <- bcPower(
 
 # Fit a new OLS regression model using the x transformed variables.
 bc_yj_x_model <- lm(formula = sales ~ .,
-                 data = df_adver_x_transform)
+                    data = df_adver_x_transform)
 
 summary(bc_yj_x_model) # R-squared:  0.9083, p-value: < 2.2e-16
 
