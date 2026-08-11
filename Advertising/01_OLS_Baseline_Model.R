@@ -9,7 +9,7 @@
 #===============================================================================
 # Packages                                      
 #===============================================================================
- 
+
 pacotes <- c("tidyverse","GGally","PerformanceAnalytics","correlation",
              "see","jtools","visreg", "Rcpp", "car", "nortest", "lmtest", "olsrr")
 
@@ -31,8 +31,8 @@ head(df_advertising, n = 5)
 
 # Removind the first column x - pick one of them
 df_advertising$X <- NULL
-df_advertising <- df_advertising[, -1]
-df_advertising <- subset(df_advertising, select = -X)
+#df_advertising <- df_advertising[, -1]
+#df_advertising <- subset(df_advertising, select = -X)
 
 summary(df_advertising)
 glimpse(df_advertising)
@@ -84,7 +84,7 @@ chart.Correlation((df_advertising), histogram = TRUE)
 
 # stats (R Base Package)
 linear_model_advertising <- lm(formula = sales ~ . ,
-                   data = df_advertising)
+                               data = df_advertising)
 
 # stats (R Base Package)
 summary(linear_model_advertising) # R-squared:  0.8972 - p-value: < 2.2e-16
@@ -95,9 +95,10 @@ summary(linear_model_advertising)$r.squared
 confint(linear_model_advertising, level = 0.95) # significance 5%
 
 #===============================================================================
-# Multiple Linear Regression - OLS
+# Step-Wise
 #===============================================================================
-# Where does it come from? k = 3.841459?
+
+# Where does k come from? k = 3.841459?
 qchisq(p = 0.05, df = 1, lower.tail = F)
 round(pchisq(3.841459, df = 1, lower.tail = F),7)
 
@@ -109,6 +110,7 @@ summary(step_lm_advertising) # R-squared:  0.8972 - p-value: < 2.2e-16
 
 # jtools Package
 export_summs(linear_model_advertising, step_lm_advertising )
+
 #===============================================================================
 # Shapiro-Francia Normality Test
 #===============================================================================
