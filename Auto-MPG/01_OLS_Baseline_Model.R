@@ -1,9 +1,8 @@
 #===============================================================================
 # Project: Auto MPG Dataset
 # Script : 01_OLS_Baseline_Model.R
-# Purpose: Build the baseline multiple linear regression model, perform
-#          Stepwise variable selection, and evaluate the final model
-#          assumptions.
+# Purpose: Build the baseline multiple linear regression model and evaluate
+#          its initial assumptions.
 # Author : Lucas Dutra Mendes
 #===============================================================================
 
@@ -11,8 +10,8 @@
 # Packages                                      
 #===============================================================================
 
-pacotes <- c("tidyverse","GGally","PerformanceAnalytics","correlation",
-             "see","jtools","visreg", "Rcpp", "car", "nortest", "lmtest", "olsrr")
+pacotes <- c("tidyverse","GGally","PerformanceAnalytics","correlation", "fastDummies",
+             "see","jtools","visreg", "Rcpp", "car", "nortest", "lmtest", "olsrr", "kableExtra")
 
 if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
   instalador <- pacotes[!pacotes %in% installed.packages()]
@@ -86,6 +85,7 @@ chart.Correlation((df_auto_mpg), histogram = TRUE)
 #===============================================================================
 # Create dummy variables for the categorical predictor 'origin'.
 # The most frequent category is automatically used as the reference level.
+
 df_auto_mpg_dummies <- dummy_columns(.data = df_auto_mpg,
                                    select_columns = "origin",
                                    remove_selected_columns = T,
