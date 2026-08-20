@@ -143,6 +143,22 @@ ols_vif_tol(mpg_step_model) # Evidence of multicollinearity was detected
 bptest(mpg_step_model) # p-value = 1.56e-05
 
 #===============================================================================
+# Predict - Honda City Hatchback Touring 2025
+#===============================================================================
+
+honda_city <- data.frame(
+  displacement = 91.34,
+  horsepower = 124.3,
+  weight = 2610,
+  model.year = 82,
+  origin_2 = 0,
+  origin_3 = 1
+)
+
+prediction_km_h <- predict(mpg_step_model, newdata = honda_city)*0.425
+prediction_km_h   # 12.79 km/l
+
+#===============================================================================
 # Pre-Conclusions
 #===============================================================================
 
