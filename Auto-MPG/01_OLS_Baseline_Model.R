@@ -130,7 +130,7 @@ confint(mpg_linear_model, level = 0.95) # significance 5%
 mpg_step_model <- step(mpg_linear_model, k = 3.841459) #cylinders-aceleration-hp
 
 summary(mpg_step_model) # R-squared:  0.8241, p-value: < 2.2e-16
-summary(mpg_linear_model)
+summary(mpg_linear_model) # R-squared:  0.8252, p-value: < 2.2e-16
 
 #===============================================================================
 # Normality - Autocorrelation - Multicolinearity - Heterocedasticity - Tests
@@ -150,7 +150,7 @@ honda_city <- data.frame(
   displacement = 91.34,
   horsepower = 124.3,
   weight = 2610,
-  model.year = 82,
+  model.year = 86,
   origin_2 = 0,
   origin_3 = 1
 )
