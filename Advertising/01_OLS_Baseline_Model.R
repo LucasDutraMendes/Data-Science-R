@@ -233,18 +233,20 @@ bptest(step_lm_advertising)      # p-value = 0.0903
 # The baseline multiple linear regression model explained approximately
 # 89.7% of the variance in Sales (R² = 0.8972).
 
-# Both the Shapiro-Francia and Shapiro-Wilk tests indicated that the
-# residuals do not follow a normal distribution (p < 0.05).
+# The results indicate that the model has a strong overall relationship
+# with Sales, while the residual diagnostics reveal that the normality
+# assumption is not fully satisfied.
 
-# The Durbin-Watson test indicated no evidence of positive
-# autocorrelation among the residuals (DW = 2.0836, p = 0.7236).
+# The Durbin-Watson test found no evidence of positive autocorrelation
+# among the residuals.
 
-# The Variance Inflation Factor (VIF) and Tolerance values indicated
-# no evidence of multicollinearity among the explanatory variables.
+# VIF and Tolerance values showed no evidence of problematic
+# multicollinearity among the explanatory variables.
 
-# The Breusch-Pagan test indicated no evidence of heteroskedasticity
-# (p > 0.05), suggesting that the residual variance is constant.
+# The Breusch-Pagan test found no statistical evidence of heteroskedasticity,
+# suggesting that the residual variance is reasonably constant.
 
-# Based on the normality and heteroskedasticity diagnostics,
-# a Box-Cox transformation will be investigated in the next step
-# to improve the model assumptions.
+# Although the model explains a large proportion of the variation in Sales,
+# the residual normality issue suggests that the model assumptions can be
+# improved. Therefore, transformation strategies will be investigated
+# in the next step.
