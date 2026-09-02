@@ -33,6 +33,10 @@ summary(df_titanic)
 glimpse(df_titanic)
 str(df_titanic)
 
+# Female passengers had a higher observed survival rate than male passengers.
+prop.table(table(df_titanic$Sex, df_titanic$Survived), margin = 1)
+prop.table(table(df_titanic$Pclass, df_titanic$Survived), margin = 1)
+
 #------------------------------------------------------------------------------#
 
 # These Variables are numeric and we must parse them to Factor
@@ -309,6 +313,20 @@ predict(
 # 0.9514909 > 0.63 - Rose was predicted as survivor
 
 #===============================================================================
+# Sensitivity Analysis
+#===============================================================================
+
+# The model was re-estimated after excluding observations flagged by
+# Cook's Distance to assess the robustness of the coefficient estimates.
+
+step_titanic_no_influential <- update(
+  step_titanic,
+  data = titanic_dummies[-influential, ]
+)
+
+summary(step_titanic_no_influential)
+
+#===============================================================================
 # Conclusion
 #===============================================================================
 
@@ -329,9 +347,18 @@ predict(
 # of fit, meaning that the predicted probabilities should be interpreted with
 # caution.
 
-# Overall, the analysis shows how demographic and socioeconomic characteristics
-# in the dataset can be used to identify groups with substantially different
-# survival outcomes.
+# Overall, the analysis shows how passenger characteristics in the dataset
+# can be used to identify groups with substantially different survival
+# outcomes.
+
+# Sensitivity analysis showed that the direction and statistical significance
+# of the main predictors remained consistent after excluding observations
+# flagged by Cook's Distance. However, some coefficient magnitudes changed,
+# indicating that these observations influenced the estimated coefficients.
+
+# The original model was retained because influential observations were not
+# necessarily erroneous and should not be removed solely based on Cook's
+# Distance.
 
 #------------------------------------------------------------------------------#
 # Second Graph - Optional: custom ROC visualization                            #
