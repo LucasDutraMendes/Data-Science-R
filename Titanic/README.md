@@ -125,6 +125,16 @@ The analysis combines data preparation, statistical modeling, model
 evaluation, and prediction to extract practical insights from the
 Titanic dataset.
 
+The analysis indicates that survival was strongly associated with passenger
+profile. Female passengers and passengers from higher classes had higher
+survival probabilities, while increasing age and a higher number of siblings
+or spouses aboard were associated with a lower survival probability, holding
+the other variables constant.
+
+Overall, the results show that survival outcomes differed substantially across
+passenger profiles, highlighting the value of logistic regression for
+identifying relevant patterns and groups within the dataset.
+
 ## Files
 
 - `01_GLM_Baseline_Model.R` - Data preparation, logistic regression,
