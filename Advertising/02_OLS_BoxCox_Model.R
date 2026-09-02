@@ -214,24 +214,20 @@ ols_test_breusch_pagan(step_bc_yj_x_model) # Prob > Chi2 = 6.082095e-09
 # Conclusions
 #===============================================================================
 
-# The Stepwise procedure removed the predictor 'newspaper',
-# resulting in a more parsimonious model.
+# The analysis showed that transforming the independent variables improved
+# the overall explanatory power of the model compared with the baseline,
+# increasing R² from 0.8972 to approximately 0.9083.
 
-# The reduced model achieved virtually the same explanatory
-# power (R² = 0.9091) as the previous model (R² = 0.9083),
-# indicating that 'newspaper' contributed little to the model.
+# However, the residual diagnostics showed that the normality assumption
+# was not fully satisfied and heteroskedasticity remained present.
 
-# The Shapiro-Francia and Shapiro-Wilk tests continued to
-# reject the null hypothesis of normally distributed residuals.
+# The Stepwise procedure removed 'newspaper', resulting in a more parsimonious
+# model with virtually the same explanatory power (R² = 0.9091).
 
-# The Durbin-Watson test continued to indicate no evidence
-# of positive autocorrelation among the residuals.
+# The final model retains TV and radio as the main predictors of Sales,
+# while newspaper provided little additional explanatory value after
+# accounting for the other advertising channels.
 
-# The remaining predictors showed no evidence of
-# multicollinearity.
-
-# The Breusch-Pagan test continued to indicate
-# heteroskedasticity (p < 0.05).
-
-# Overall, the Stepwise procedure produced a simpler model
-# without a meaningful loss in explanatory power.
+# Overall, the final model provides a strong explanation of Sales variation,
+# although some OLS assumptions remain imperfect and should be considered
+# when interpreting the statistical inference.
