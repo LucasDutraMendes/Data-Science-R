@@ -117,23 +117,25 @@ The classification uses a probability cutoff of `0.63`.
 
 ## Conclusion
 
-This project demonstrates how logistic regression can be used to analyze
-binary outcomes and identify passenger characteristics associated with
-different survival outcomes.
+The analysis shows that survival on the Titanic was strongly related to
+passenger profile.
 
-The analysis combines data preparation, statistical modeling, model
-evaluation, and prediction to extract practical insights from the
-Titanic dataset.
+Women and passengers traveling in higher classes had higher survival
+probabilities, while older passengers and those traveling with more
+siblings or spouses had lower predicted survival probabilities.
 
-The analysis indicates that survival was strongly associated with passenger
-profile. Female passengers and passengers from higher classes had higher
-survival probabilities, while increasing age and a higher number of siblings
-or spouses aboard were associated with a lower survival probability, holding
-the other variables constant.
+The model performed well at distinguishing between survivors and
+non-survivors, achieving an AUC of 0.854. However, the Hosmer-Lemeshow test
+suggested that the predicted probabilities were not perfectly aligned with
+the observed outcomes.
 
-Overall, the results show that survival outcomes differed substantially across
-passenger profiles, highlighting the value of logistic regression for
-identifying relevant patterns and groups within the dataset.
+We also checked the influence of individual observations. Although some
+passengers had a noticeable impact on the model estimates, the main
+relationships remained consistent when these observations were excluded.
+
+Overall, the analysis shows that survival was far from evenly distributed
+across passenger profiles and demonstrates how statistical modeling can
+turn passenger data into meaningful insights.
 
 ## Files
 
