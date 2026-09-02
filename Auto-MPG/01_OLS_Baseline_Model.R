@@ -162,15 +162,28 @@ prediction_km_h   # 12.79 km/l
 # Pre-Conclusions
 #===============================================================================
 
-# The final model, obtained after the Stepwise variable selection procedure, 
-# explained approximately 82.4% of the variance in MPG (R² = 0.8241).
+# The model obtained after Stepwise variable selection explained approximately
+# 82.4% of the variance in MPG (R² = 0.8241).
 
-# Both the Shapiro-Francia and Shapiro-Wilk tests indicated that the
-# residuals do not follow a normal distribution (p < 0.05).
+# The initial analysis indicates that vehicle characteristics are strongly
+# related to fuel efficiency, as the model explains a substantial proportion
+# of the variation in MPG.
+
+# However, the regression diagnostics revealed several assumption issues.
+# Both the Shapiro-Francia and Shapiro-Wilk tests indicated that the residuals
+# do not follow a normal distribution.
 
 # The Durbin-Watson test indicated significant positive autocorrelation
-# among the residuals (DW = 1.2637, p-value = 2.866e-14).
+# among the residuals.
 
 # Evidence of multicollinearity was detected among the explanatory variables.
 
-# The Breusch-Pagan test indicated evidence of heteroskedasticity (p < 0.05).
+# The Breusch-Pagan test indicated evidence of heteroskedasticity,
+# suggesting that the residual variance is not constant.
+
+# Overall, the baseline model captures an important portion of the variation
+# in fuel efficiency, but the diagnostic results indicate that the model
+# assumptions are not fully satisfied.
+
+# Therefore, transformation strategies and further model evaluation
+# will be investigated in the next step.
