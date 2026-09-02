@@ -182,9 +182,20 @@ prediction_km_l # 12.07846
 #===============================================================================
 # Conclusion
 #===============================================================================
-# The fully transformed model achieved the highest explanatory power (R² = 0.8886)
-# and improved the normality of the residuals. However, autocorrelation,
-# heteroscedasticity, and multicollinearity remain present. Therefore, the model
-# provides a reasonable fit but its coefficients should be interpreted with
-# caution. The model estimated approximately 12.08 km/L for the Honda City.
-#===============================================================================
+# The transformation analysis improved the overall explanatory power of the
+# regression model, with the fully transformed model achieving an R² of 0.8886.
+
+# The Box-Cox transformation of the dependent variable substantially improved
+# the normality of the residuals, with the Shapiro-Wilk test no longer providing
+# evidence against the normality assumption.
+
+# However, positive autocorrelation, heteroskedasticity, and multicollinearity
+# remained present in the final model. Therefore, the estimated coefficients
+# should be interpreted with caution.
+
+# From an analytical perspective, the results indicate that vehicle
+# characteristics are strongly associated with fuel efficiency, with the final
+# model explaining a substantial proportion of the variation in MPG.
+
+# The model was also used to estimate the fuel efficiency of a hypothetical
+# Honda City, resulting in approximately 12.08 km/L.
