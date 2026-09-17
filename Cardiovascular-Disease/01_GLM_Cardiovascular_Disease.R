@@ -1,6 +1,6 @@
 #===============================================================================
 # Project: Cardiovascular Disease Dataset
-# Script : 02_Multinomial_Logistic_Regression.R
+# Script : 01_GLM_Cardiovascular_Disease.R
 # Purpose: Build and evaluate a multinomial logistic regression model for
 #          cardiovascular disease risk level classification.
 # Author : Lucas Dutra Mendes
