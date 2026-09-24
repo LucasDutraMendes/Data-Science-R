@@ -78,10 +78,10 @@ the model fit according to the Likelihood Ratio Test.
 
 The final model achieved:
 
-- AUC: `0.854`
-- Gini: `0.708`
-- Maximum training accuracy: `0.817`
-- Classification cutoff: `0.63`
+- AUC: `0.899`
+- Gini: `0.797`
+- Maximum training accuracy: `0.8561237`
+- Classification cutoff: `0.59`
 
 VIF and Tolerance values showed no evidence of problematic
 multicollinearity.
@@ -110,10 +110,10 @@ individual passenger profiles.
 
 | Passenger | Predicted Probability | Classification |
 |-----------|----------------------:|----------------|
-| Jack      | 12.36%                | Non-survivor   |
-| Rose      | 95.15%                | Survivor       |
+| Jack      | 7.415%                | Non-survivor   |
+| Rose      | 97.50%                | Survivor       |
 
-The classification uses a probability cutoff of `0.63`.
+The classification uses a probability cutoff of `0.59`.
 
 ## Conclusion
 
