@@ -198,10 +198,10 @@ pred_class <- ifelse(predict_matrix >= 0.63, 1, 0)
 confusionMatrix(
   factor(pred_class, levels = c(1, 0)),
   factor(df_titanic$Survived, levels = c(1, 0))
-)
+)$byClass[c("Sensitivity", "Specificity")]
 
-# Cutoff ~ 0.37: sensitivity/specificity trade-off
-# Cutoff = 0.63: maximum training accuracy
+# Cutoff ~ 0.37: sensitivity/specificity trade-off - Sensitivity 0.7865497 - Specificity 0.7887067  
+# Cutoff = 0.63: maximum training accuracy - Sensitivity 0.6286550 - Specificity 0.9344262 
 
 #------------------------------------------------------------------------------#
 # Plot Roc Curve                                                               #
