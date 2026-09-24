@@ -63,10 +63,10 @@ table(df_titanic$Pclass) #  To dummy it, we will be removing 3 as it is more fre
 
 # Creating Dummy - we will not include neither Male nor Pclass_3 in the GLM model
 titanic_dummies <- dummy_columns(.data = df_titanic,
-                                    select_columns = c("Sex", 
-                                                       "Pclass"),
-                                    remove_selected_columns = T,
-                                    remove_first_dummy = F) #FALSE
+                                 select_columns = c("Sex", 
+                                                    "Pclass"),
+                                 remove_selected_columns = T,
+                                 remove_first_dummy = F) #FALSE
 
 # Removing these variables from the analysis
 titanic_dummies$Name = NULL
@@ -88,8 +88,8 @@ titanic_dummies$Pclass_3 = NULL # Removing Pclass_3
 #===============================================================================
 
 glm_model <- glm(formula = Survived ~ . , 
-                         data = titanic_dummies, 
-                         family = "binomial")
+                 data = titanic_dummies, 
+                 family = "binomial")
 
 summary(glm_model) # AIC: 804.78
 
@@ -102,7 +102,7 @@ export_summs(glm_model, scale = F, digits = 6)
 #===============================================================================
 
 step_titanic <- step(object = glm_model,
-                        k = qchisq(p = 0.05, df = 1, lower.tail = FALSE))
+                     k = qchisq(p = 0.05, df = 1, lower.tail = FALSE))
 
 summary(step_titanic) # AIC: 803.23
 
@@ -119,14 +119,49 @@ export_summs(glm_model, step_titanic, scale = F,
 # AIC the smaller the better - step_titanic is smaller and therefore the best choice
 
 #===============================================================================
+# Cook's Distance
+#===============================================================================
+
+cook <- cooks.distance(step_titanic)
+
+plot(
+  cook,
+  type = "h",
+  main = "Cook's Distance",
+  ylab = "Cook's Distance",
+  xlab = "Observation")
+
+abline(
+  h = 4 / nrow(df_titanic),
+  lty = 2)
+
+# Identify observations above the 4/n threshold
+influential <- which(cook > 4 / nrow(df_titanic))
+
+length(influential)  # 50 observations
+
+#===============================================================================
+# Sensitivity Analysis
+#===============================================================================
+
+# The model was re-estimated after excluding observations flagged by
+# Cook's Distance to assess the robustness of the coefficient estimates.
+
+titanic_influential <- update(step_titanic,
+              data = titanic_dummies[-influential, ])
+
+summary(titanic_influential) # AIC 625.19
+logLik(titanic_influential) # -306.5951 (df=6)
+
+#===============================================================================
 # Accuracy  -  CutOff  -  Sensibility  -  Specificity 
 #===============================================================================
 # First method we have to define the cutoff 
 
 # 1 - prediction function package ROCR - our goal her is to build an object
 # with the necessary data to plot the ROC later
-predict_roc <- prediction(predictions = step_titanic$fitted.values, 
-                        labels = df_titanic$Survived) 
+predict_roc <- prediction(predictions = titanic_influential$fitted.values,
+  labels = titanic_dummies[-influential, ]$Survived)
 
 # 2 - performance function package ROCR - extract sensibility to plot
 roc_curve <- performance(predict_roc, measure = "sens") 
@@ -180,27 +215,28 @@ ggplotly(plt %>%
 cutoffs <- seq(0, 1, by = 0.01)
 
 accuracy <- sapply(cutoffs, function(cutoff) {
-  pred_class <- ifelse(step_titanic$fitted.values >= cutoff, 1, 0)
-  mean(pred_class == df_titanic$Survived)
+  pred_class <- ifelse(titanic_influential$fitted.values >= cutoff, 1, 0)
+  mean(pred_class == df_titanic[-influential, ]$Survived)
 })
 
-cutoffs[which.max(accuracy)]  #0.63
-max(accuracy)   #0.8170595
+cutoffs[which.max(accuracy)] # 0.59
+max(accuracy)   # 0.8561237
 
 #------------------------------------------------------------------------------#
 # Confusion Matrix                                                             #
 #------------------------------------------------------------------------------#
 
-predict_matrix <- predict(step_titanic, type = "response")
+predict_matrix <- predict(titanic_influential, type = "response")
 
-pred_class <- ifelse(predict_matrix >= 0.63, 1, 0) 
+pred_class <- ifelse(predict_matrix >= 0.59, 1, 0) 
 
 confusionMatrix(
   factor(pred_class, levels = c(1, 0)),
-  factor(df_titanic$Survived, levels = c(1, 0))
+  factor(df_titanic[-influential, ]$Survived, levels = c(1, 0))
 )$byClass[c("Sensitivity", "Specificity")]
 
-# Cutoff ~ 0.37: sensitivity/specificity trade-off - Sensitivity 0.7865497 - Specificity 0.7887067  
+# Cutoff = 0.59 sensitivity/specificity trade-off - Sensitivity 0.7161290 - Specificity 0.9378531 
+# Cutoff = 0.37: sensitivity/specificity trade-off - Sensitivity 0.7865497 - Specificity 0.7887067  
 # Cutoff = 0.63: maximum training accuracy - Sensitivity 0.6286550 - Specificity 0.9344262 
 
 #------------------------------------------------------------------------------#
@@ -208,11 +244,11 @@ confusionMatrix(
 #------------------------------------------------------------------------------#
 # Generate the ROC curve and calculate AUC and Gini.
 
-roc_curve_2 <- roc(response = df_titanic$Survived, 
-               predictor = step_titanic$fitted.values)
+roc_curve <- roc(response = df_titanic[-influential, ]$Survived,
+  predictor = titanic_influential$fitted.values)
 
 ggplotly(
-  ggroc(roc_curve_2, color = "#440154FF", size = 1) +
+  ggroc(roc_curve, color = "#440154FF", size = 1) +
     geom_segment(
       aes(x = 1, xend = 0, y = 0, yend = 1),
       color = "grey40",
@@ -223,10 +259,10 @@ ggplotly(
       y = "Sensitivity",
       title = paste(
         "AUC = Area Under the Curve:",
-        round(as.numeric(roc_curve_2$auc), 3),
+        round(as.numeric(roc_curve$auc), 3),
         "|",
         "Gini",
-        round(2 * as.numeric(roc_curve_2$auc) - 1, 3)
+        round(2 * as.numeric(roc_curve$auc) - 1, 3)
       )
     ) +
     theme_bw()
@@ -242,45 +278,20 @@ ggplotly(
 # There is no evidence of multicollinearity in the model, 
 #as all VIF values are below 5 and all tolerance values are above 0.20.
 
-vif(step_titanic)
-tolerance <- 1 / vif(step_titanic) 
+vif(titanic_influential)
+tolerance <- 1 / vif(titanic_influential) 
 tolerance
-
-#===============================================================================
-# Cook's Distance
-#===============================================================================
-
-cook <- cooks.distance(step_titanic)
-
-plot(
-  cook,
-  type = "h",
-  main = "Cook's Distance",
-  ylab = "Cook's Distance",
-  xlab = "Observation"
-)
-
-abline(
-  h = 4 / nrow(df_titanic),
-  lty = 2
-)
-
-# Identify observations above the 4/n threshold
-influential <- which(cook > 4 / nrow(df_titanic))
-
-length(influential)  # 50 observations
 
 #===============================================================================
 # Hosmer-Lemeshow Goodness-of-Fit Test
 #===============================================================================
 
 # ResouceSelection package
-hoslem.test(
-  df_titanic$Survived,
-  fitted(step_titanic),
-  g = 10
-)   # X-squared = 21.256, df = 8, p-value = 0.006497
-    # # p < 0.05 indicates evidence of lack of fit.
+hoslem.test(df_titanic[-influential, ]$Survived,
+  fitted(titanic_influential), g = 10)
+
+# X-squared = 59.172, df = 8, p-value = 6.774e-10
+# # p < 0.05 indicates evidence of lack of fit.
 
 #===============================================================================
 # Jack and Rose Hypothetical passengers inspired from Titanic - Prediction
@@ -291,40 +302,25 @@ jack <- data.frame(
   SibSp = 0,      # traveling alone, no friends or siblings
   Pclass_1 = 0,   # 3rd class
   Pclass_2 = 0,
-  Sex_female = 0  #men 
-)
+  Sex_female = 0)  #men 
+
 
 rose <- data.frame(
   Age = 17,
   SibSp = 1,
   Pclass_1 = 1,
-  Pclass_2 = 0,oq
-  Sex_female = 1
-)
+  Pclass_2 = 0,
+  Sex_female = 1)
 
 new_passengers <- rbind(jack, rose)
 
 predict(
-  step_titanic,
+  titanic_influential,
   newdata = new_passengers,
-  type = "response"
-)
-# 0.1236049 < 0.63 - predicted as non-survivor
-# 0.9514909 > 0.63 - Rose was predicted as survivor
+  type = "response")
 
-#===============================================================================
-# Sensitivity Analysis
-#===============================================================================
-
-# The model was re-estimated after excluding observations flagged by
-# Cook's Distance to assess the robustness of the coefficient estimates.
-
-step_titanic_no_influential <- update(
-  step_titanic,
-  data = titanic_dummies[-influential, ]
-)
-
-summary(step_titanic_no_influential)
+# 0.07414779  < 0.59 - predicted as non-survivor
+# 0.97498339  > 0.59 - Rose was predicted as survivor
 
 #===============================================================================
 # Conclusion
@@ -343,7 +339,7 @@ summary(step_titanic_no_influential)
 # not evenly distributed across the passenger population.
 
 # From a predictive perspective, the model showed good discriminatory ability
-# (AUC = 0.854), although the Hosmer-Lemeshow test indicated evidence of lack
+# (AUC = 0.899), although the Hosmer-Lemeshow test indicated evidence of lack
 # of fit, meaning that the predicted probabilities should be interpreted with
 # caution.
 
@@ -356,38 +352,31 @@ summary(step_titanic_no_influential)
 # flagged by Cook's Distance. However, some coefficient magnitudes changed,
 # indicating that these observations influenced the estimated coefficients.
 
-# The original model was retained because influential observations were not
-# necessarily erroneous and should not be removed solely based on Cook's
-# Distance.
-
 #------------------------------------------------------------------------------#
 # Second Graph - Optional: custom ROC visualization                            #
 #------------------------------------------------------------------------------#
 
 # 1. Generate ROC curve data
-roc_curve_2 <- roc(response = df_titanic$Survived, 
-                   predictor = step_titanic$fitted.values)
+roc_curve_2 <- roc(response = df_titanic[-influential, ]$Survived,
+                   predictor = titanic_influential$fitted.values)
 
 # 2. Extract specificities and sensitivities into a data frame
 roc_data <- data.frame(
   Specificity = roc_curve_2$specificities,
-  Sensitivity = roc_curve_2$sensitivities
-)
+  Sensitivity = roc_curve_2$sensitivities)
 
 # 3. Create polygons for custom area filling based on the Viridis palette
 # Orange/Yellowish equivalent from Viridis for the Random Guess area
 # Hex "#fde725" represents the bright yellow/green tip of the Viridis scale
 random_guess_poly <- data.frame(
   x = c(1, 0, 0),
-  y = c(0, 0, 1)
-)
+  y = c(0, 0, 1))
 
 # Dark Purple/Blue equivalent from Viridis for the Gini area
 # Hex "#440154" represents the dark purple base of the Viridis scale
 gini_poly <- data.frame(
   x = c(roc_data$Specificity, 0),
-  y = c(roc_data$Sensitivity, 0)
-)
+  y = c(roc_data$Sensitivity, 0))
 
 # 4. Build the plot with colorblind-friendly colors and English annotations
 p <- ggplot() +
