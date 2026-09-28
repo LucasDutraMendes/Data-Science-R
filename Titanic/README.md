@@ -79,7 +79,7 @@ the model fit according to the Likelihood Ratio Test.
 The final model achieved:
 
 - AUC: `0.899`
-- Gini: `0.797`
+- Gini: `0.798`
 - Maximum training accuracy: `0.8561237`
 - Classification cutoff: `0.59`
 
@@ -125,7 +125,7 @@ probabilities, while older passengers and those traveling with more
 siblings or spouses had lower predicted survival probabilities.
 
 The model performed well at distinguishing between survivors and
-non-survivors, achieving an AUC of 0.854. However, the Hosmer-Lemeshow test
+non-survivors, achieving an AUC of 0.899. However, the Hosmer-Lemeshow test
 suggested that the predicted probabilities were not perfectly aligned with
 the observed outcomes.
 
