@@ -174,6 +174,8 @@ predictive performance.
 - `01_GLM_Cardiovascular_Disease.R` - Data preparation, multinomial
   logistic regression, statistical tests, model evaluation, diagnostics,
   and prediction.
+
+- `02_Smote_GLM_Cardiovascular_Disease.R ` 
 - `Cardiovascular_Disease.csv` - Cardiovascular disease dataset.
 
 ## Author
