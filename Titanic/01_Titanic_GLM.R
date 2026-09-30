@@ -1,6 +1,6 @@
 #===============================================================================
 # Project: Titanic Dataset
-# Script : 01_GLM_Baseline_Model.R
+# Script : 01_Titanic_GLM_Model.R
 # Purpose: Build the baseline binary logistic regression model and evaluate
 #          its initial assumptions.
 # Author : Lucas Dutra Mendes
@@ -264,11 +264,7 @@ ggplotly(
         round(2 * as.numeric(roc_curve$auc) - 1, 3)
       )
     ) +
-    theme_bw()
-)
-
-# I am adding an additional AUC graph at the end of this script just for out of
-# curiosity. I consider it as a better version
+    theme_bw())
 
 #------------------------------------------------------------------------------#
 # VIF - Tolerance
