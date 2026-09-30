@@ -171,7 +171,7 @@ predictive performance.
 
 ## Files
 
-- `01_Multinomial_Logistic_Regression.R` - Data preparation, multinomial
+- `01_GLM_Cardiovascular_Disease.R` - Data preparation, multinomial
   logistic regression, statistical tests, model evaluation, diagnostics,
   and prediction.
 - `Cardiovascular_Disease.csv` - Cardiovascular disease dataset.
