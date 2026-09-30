@@ -34,32 +34,34 @@ str(df_cardio_disease)
 # Data Wrangling / Cleaning                                                                    
 #------------------------------------------------------------------------------#
 
-# Blood Pressure - can be removed as its already present as systolic & Diastolic
-df_cardio_disease$Blood.Pressure..mmHg. = NULL
+# Blood Pressure - removed because it is already represented
+# by Systolic and Diastolic Blood Pressure.
+# Height in meters - removed because Height in cm is already present.
+# CVD Risk Score - removed because it was calculated using information
+# related to the dependent variable, which could cause data leakage.
+# Waist-to-Height Ratio - removed because it is derived from
+# Abdominal Circumference and Height, avoiding multicollinearity.
+# Blood Pressure Category - removed because it is already represented
+# by Systolic and Diastolic Blood Pressure.
+# Total Cholesterol - removed due to strong linear dependency
+# with other lipid variables.
+# The following variables were removed during exploratory model refinement
+# after evaluating their statistical contribution to the model:
+# Weight, Sex, Fasting Blood Sugar, Height, and Abdominal Circumference.
 
-# Height in Metros can be removed as Height in cm is already present
-df_cardio_disease$Height..m. = NULL
-
-# Risk Score was calculated having the Dependend Variable as reference - removed
-df_cardio_disease$CVD.Risk.Score = NULL
-
-# Removed because is a result of abdominal Circumference / height
-# Therefore, avoding multicolinearity
-df_cardio_disease$Waist.to.Height.Ratio =NULL
-
-# Already represented by Systolic and Diastolic - removed
-df_cardio_disease$Blood.Pressure.Category = NULL
-
-# Removed due to strong linear dependency with other lipid variables.
-df_cardio_disease$Total.Cholesterol..mg.dL. = NULL
-
-# These variables were removed during exploratory model refinement
-# after evaluating their statistical contribution to the model.
-df_cardio_disease$Weight..kg. = NULL
-df_cardio_disease$Sex = NULL
-df_cardio_disease$Fasting.Blood.Sugar..mg.dL. = NULL
-df_cardio_disease$Height..cm. = NULL
-df_cardio_disease$Abdominal.Circumference..cm. = NULL
+df_cardio_disease <- df_cardio_disease[
+  !names(df_cardio_disease) %in% c(
+    "Blood.Pressure..mmHg.",
+    "Height..m.",
+    "CVD.Risk.Score",
+    "Waist.to.Height.Ratio",
+    "Blood.Pressure.Category",
+    "Total.Cholesterol..mg.dL.",
+    "Weight..kg.",
+    "Sex",
+    "Fasting.Blood.Sugar..mg.dL.",
+    "Height..cm.",
+    "Abdominal.Circumference..cm.")]
 
 # There are a few NAs in the database and therefore I'll be removing them
 colSums(is.na(df_cardio_disease)) # Looking for NA
@@ -233,15 +235,12 @@ for (variable_name in names(variable_groups)) {
   reduced_formula <- as.formula(
     paste(
       "CVD.Risk.Level ~ . -",
-      paste(variables_to_remove, collapse = " - ")
-    )
-  )
+      paste(variables_to_remove, collapse = " - ")))
   
   reduced_model <- multinom(
     reduced_formula,
     data = disease_dummies,
-    trace = FALSE
-  )
+    trace = FALSE)
   
   reduced_logLik <- as.numeric(logLik(reduced_model))
   
@@ -253,8 +252,7 @@ for (variable_name in names(variable_groups)) {
   p_value <- pchisq(
     chi_square,
     df = df,
-    lower.tail = FALSE
-  )
+    lower.tail = FALSE)
   
   LRT_results <- rbind(
     LRT_results,
@@ -262,14 +260,10 @@ for (variable_name in names(variable_groups)) {
       Variable = variable_name,
       Chi_Square = chi_square,
       df = df,
-      P_value = p_value
-    )
-  )
-}
+      P_value = p_value))}
 
 LRT_results <- LRT_results[
-  order(-LRT_results$Chi_Square),
-]
+  order(-LRT_results$Chi_Square),]
 
 rownames(LRT_results) <- NULL
 
@@ -292,12 +286,10 @@ results <- data.frame(
   Std_Error = as.vector(t(standard_errors)),
   Wald_z = as.vector(t(wald_z)),
   P_value = as.vector(t(p_values)),
-  Odds_Ratio = exp(as.vector(t(coefficients)))
-)
+  Odds_Ratio = exp(as.vector(t(coefficients))))
 
 results <- results[
-  order(results$Comparison, results$P_value),
-]
+  order(results$Comparison, results$P_value),]
 
 results # All Variables are relevant to this model
 
@@ -319,8 +311,7 @@ modelo_vif <- lm(
     Physical.Activity.Level_1 +
     Physical.Activity.Level_2 +
     Family.History.of.CVD_1,
-  data = disease_dummies
-)
+  data = disease_dummies)
 
 vif(modelo_vif) # No evidence of multicollinearity
 
