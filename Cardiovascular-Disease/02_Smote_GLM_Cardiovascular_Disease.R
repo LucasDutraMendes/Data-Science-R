@@ -1,17 +1,22 @@
 #===============================================================================
 # Project: Cardiovascular Disease Dataset
 # Script : 02_Smote_GLM_Cardiovascular_Disease.R
-# Purpose: Build and evaluate a multinomial logistic regression model for
-#          cardiovascular disease risk level classification.
+# Purpose: Apply SMOTE to address class imbalance, evaluate multinomial
+#          logistic regression performance, and assess model performance
+#          on an independent test set.
 # Author : Lucas Dutra Mendes
 #===============================================================================
 
+#===============================================================================
 # All required packages were loaded in Script 01_GLM_Cardiovascular_Disease.R
-# Therefore this script is a continuation of the prior one
+#===============================================================================
 
 #===============================================================================
-# SMOTE
+# Exploratory SMOTE Experiment - Full Dataset
 #===============================================================================
+# This experiment is exploratory only. SMOTE is applied before the train/test
+# split and therefore the resulting in-sample metrics should not be interpreted
+# as out-of-sample performance.
 
 library(smotefamily)
 
@@ -19,8 +24,7 @@ smote_result <- SMOTE(
   X = df_disease[, -which(names(df_disease) == "CVD.Risk.Level")],
   target = df_disease$CVD.Risk.Level,
   K = 7,
-  dup_size = 2.5
-)
+  dup_size = 2.5)
 
 # SMOTE generates synthetic observations for the minority classes
 # to reduce class imbalance and potentially improve classification
@@ -95,7 +99,7 @@ logLik(glm_smote)   # log Lik -1401.467 (df=24)
 table(smote_dummies$CVD.Risk.Level)
 
 #===============================================================================
-# Qui2
+# Likelihood Ratio Test - Chi-Square
 #===============================================================================
 
 # Creates a function called "Qui2".
@@ -138,19 +142,16 @@ Qui2 <- function(x) {
   pvalue <- pchisq(
     Qui.Quadrado,
     df = df,
-    lower.tail = FALSE
-  )
+    lower.tail = FALSE)
   
   # Creates a data frame containing the test results.
   resultado <- data.frame(
     Qui.Quadrado = Qui.Quadrado,  # Chi-square statistic
     df = df,                      # Degrees of freedom
-    pvalue = pvalue               # p-value
-  )
+    pvalue = pvalue)             # p-value
   
   # Returns the data frame with the results.
-  return(resultado)
-}
+  return(resultado)}
 
 #===============================================================================
 # GLOBAL MODEL SIGNIFICANCE
@@ -176,8 +177,7 @@ variable_groups <- list(
   Diabetes.Status = "Diabetes.Status_1",
   Physical.Activity.Level = c(
     "Physical.Activity.Level_1",
-    "Physical.Activity.Level_2"
-  ),
+    "Physical.Activity.Level_2"),
   Family.History.of.CVD = "Family.History.of.CVD_1")
 
 full_logLik <- as.numeric(logLik(full_model))
@@ -290,7 +290,7 @@ table(test_data$CVD.Risk.Level)
 
 #------------------------------------------------------------------------------#
 #===============================================================================
-# Smote Train Data-Frame
+# SMOTE - Training Dataset
 #===============================================================================
 #------------------------------------------------------------------------------#
 
@@ -332,7 +332,7 @@ train_smote$Physical.Activity.Level <- pmin(
   pmax(train_smote$Physical.Activity.Level, 0), 2)
 
 #===============================================================================
-# DUMMIES - Train Smote    
+# Dummy Variables - SMOTE Training Dataset   
 #===============================================================================
 
 # CVD.Risk.Level must be Factor
@@ -425,25 +425,9 @@ cm
 # Conclusion
 #===============================================================================
 
-# The SMOTE experiments showed that class imbalance had a strong impact on the
-# model's ability to identify LOW-risk observations.
+# The SMOTE-based model showed better identification of the LOW-risk class,
+# although performance was not improved uniformly across all classes.
 
-# In the separate 80/20 baseline experiment without SMOTE, the model achieved
-# sensitivities of approximately 79.8% for HIGH, 63.4% for INTERMEDIARY,
-# and only 2.9% for LOW.
-
-# After applying SMOTE to the training set, LOW sensitivity increased to
-# approximately 26.5%. However, this improvement was accompanied by lower
-# sensitivity for HIGH and INTERMEDIARY, which decreased to approximately
-# 75.2% and 52.4%, respectively.
-
-# Additional experiments with different dup_size values showed that increasing
-# the amount of synthetic data could further improve LOW sensitivity, but this
-# also introduced a trade-off with the classification performance of the other
-# classes.
-
-# Therefore, SMOTE improved the model's ability to identify the minority
-# LOW-risk class, but did not improve performance uniformly across all classes.
 # The results also highlight the importance of evaluating oversampling methods
 # on an independent test set rather than relying only on in-sample performance.
 
