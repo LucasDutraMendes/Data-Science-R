@@ -1,249 +1,204 @@
 #===============================================================================
 # Project: Advertising Dataset
-# Script : 01_OLS_Baseline_Model.R
-# Purpose: Build the baseline multiple linear regression model and evaluate
-#          its initial assumptions.
+# Script : 02_BoxCox_Model_Comparison.R
+# Purpose: Compare different Box-Cox and Yeo-Johnson transformation
+#          strategies, evaluate regression assumptions, and select
+#          the final OLS regression model.
 # Author : Lucas Dutra Mendes
 #===============================================================================
 
 #===============================================================================
-# Packages                                      
+# All required packages were loaded in Script 01_OLS_Baseline_Model.R
 #===============================================================================
 
-packages <- c("GGally","PerformanceAnalytics","correlation",
-             "see","jtools", "car", "nortest", "lmtest", "olsrr")
-
-installer <- packages[!packages %in% installed.packages()[, "Package"]]
-
-if (length(installer) > 0) {
-  install.packages(installer, dependencies = TRUE)}
-
-invisible(lapply(packages, library, character.only = TRUE))
-
-#-------------------------------------------------------------------------------
-
-df_advertising <- read.csv("Advertising.csv")
-
-head(df_advertising, n = 5)
-
-# Removind the first column x - pick one of them
-df_advertising$X <- NULL
-#df_advertising <- df_advertising[, -1]
-#df_advertising <- subset(df_advertising, select = -X)
-
-summary(df_advertising)
-glimpse(df_advertising)
-str(df_advertising)
-any(is.na(df_advertising))
-
 #===============================================================================
-# Correlations                                      
-#===============================================================================
-# Exploring the correlations among variables - including Sales.
-
-# GGally Package
-ggcorr(df_advertising, label=T)
-
-# stats (R Base Package)
-cor(df_advertising, use = "everything",
-    method = "pearson") # kendall or spearman
-
-# see (plot) Package
-#Interrelationships among the variables
-df_advertising |> 
-  correlation(method = "pearson") |> 
-  plot()
-
-# stats (R Base Package)
-cor(df_advertising$radio, df_advertising$sales)
-cor(df_advertising$newspaper, df_advertising$sales)
-cor(df_advertising$TV, df_advertising$sales)
-
-# PerformanceAnalytics
-# correlation Package
-chart.Correlation((df_advertising), histogram = TRUE)
-
-# TV CORRELATES .78 WITH SALES, RADIO 0.58 AND NEWSPAPER 0.23
-# Pairwise correlations alone cannot confirm multicollinearity.
-
-#===============================================================================
-# Multiple Linear Regression - OLS
+# Box-Cox Transformation - Dependent Variable
 #===============================================================================
 
-# OLS - Ordinary Least Squares
+# car Package
+# Estimate the optimal Box-Cox lambda for the dependent variable y.
+lambda_BC_y <- powerTransform(df_advertising$sales)
+lambda_BC_y
 
-# 1. The sum of the residuals equals zero.
-# 2. The sum of the squared residuals is minimized.
-#
-# Multiple Linear Regression Model:
-# sales = β0 + β1·TV + β2·Radio + β3·Newspaper + ε
+# Apply the Box-Cox transformation to the dependent variable.
+df_y_bc <- df_advertising
+df_y_bc$sales <- bcPower(df_y_bc$sales, lambda_BC_y$lambda)
 
+# Fit a new OLS regression model using the Box-Cox transformed variable. 
+bc_y_model <- lm(formula = sales ~ ., 
+                 data = df_y_bc)
 
-# stats (R Base Package)
-linear_model_advertising <- lm(formula = sales ~ . ,
-                               data = df_advertising)
+summary(bc_y_model) # R-squared: 0.8828, p-value = 4.729e-13
 
-# stats (R Base Package)
-summary(linear_model_advertising) # R-squared:  0.8972 - p-value: < 2.2e-16
-summary(linear_model_advertising)$r.squared
-
-# stats (R Base Package)
-# Confidence Intervals
-confint(linear_model_advertising, level = 0.95) # significance 5%
-
-#===============================================================================
-# Stepwise Variable Selection
-#===============================================================================
-
-# Where does k come from? k = 3.841459?
-qchisq(p = 0.05, df = 1, lower.tail = F)
-round(pchisq(3.841459, df = 1, lower.tail = F),7)
-
-# stats (R Base Package)
-step_lm_advertising <- step(linear_model_advertising, k = 3.841459)
-
-# stats (R Base Package)
-summary(step_lm_advertising) # R-squared:  0.8972 - p-value: < 2.2e-16
-
-# jtools Package
-export_summs(linear_model_advertising, step_lm_advertising )
+sf.test(bc_y_model$residuals) # W = 0.80608, p-value = 4.729e-13
+shapiro.test(bc_y_model$residuals) # W = 0.81315, p-value = 9.541e-15
+dwtest(bc_y_model) # DW = 2.0554, p-value = 0.6527
+ols_vif_tol(bc_y_model) # Exactly the same output as the baseline model.
+bptest(bc_y_model) # p-value = 0.04231
 
 #===============================================================================
-# Shapiro-Francia Normality Test
+# Interpretation
 #===============================================================================
-# p-value < 0.05 indicates that the residuals
-# do not follow a normal distribution.
 
-# nortest Package
-sf.test(linear_model_advertising$residuals) # p-value = 2.553e-08
-sf.test(step_lm_advertising$residuals) # p-value = 2.698e-08
+# Applying the Box-Cox transformation to the dependent variable
+# did not improve the overall model diagnostics.
 
-# Shapiro-Francia Normality Test
-# H0: Residuals are normally distributed.
-# H1: Residuals are not normally distributed.
-# W = 0.91439, p-value = 2.553e-08
-# w = 0.9148, p-value = 2.698e-08 
-# Since p < 0.05, H0 is rejected for both models
-# The residuals do not follow a normal distribution.
+# The transformed model presented an R-squared of 0.8828.
+# Because the dependent variable was transformed, this R-squared
+# is not directly comparable with the baseline model on the original
+# Sales scale.
 
-#===============================================================================
-# Shapiro-Wilk Normality Test
-#===============================================================================
-# The Shapiro-Wilk test was performed to assess whether the residuals
-# of the linear regression model follow a normal distribution.
+# The Shapiro-Francia and Shapiro-Wilk tests continued to reject
+# the null hypothesis of normally distributed residuals.
 
-# stats (R Base Package)
-shapiro.test(linear_model_advertising$residuals) # p-value = 3.939e-09
-shapiro.test(step_lm_advertising$residuals)      # p-value = 4.19e-09
+# The Durbin-Watson test still indicated no evidence of
+# positive autocorrelation.
 
-# H0: The residuals are normally distributed.
-# H1: The residuals are not normally distributed.
+# Multicollinearity remained unchanged, as expected,
+# since only the dependent variable was transformed.
 
-# W = 0.91767, p-value = 3.939e-09
-# W = 0.91804, p-value = 4.19e-09
-# Since p < 0.05, H0 is rejected for both models
-# There is strong statistical evidence that the residuals do not follow
-# a normal distribution.
+# The Breusch-Pagan test indicated evidence of heteroskedasticity
+# (p = 0.04231), suggesting that the residual variance is not constant.
+
+# Overall, applying the Box-Cox transformation only to the
+# dependent variable did not improve the regression assumptions.
 
 #===============================================================================
-# Durbin-Watson Autocorrelation Test
+# Box-Cox Transformation - Independent Variables
 #===============================================================================
-# The Durbin-Watson test was performed to evaluate whether the residuals
-# of the linear regression model are autocorrelated.
+# Box-Cox requires strictly positive values.
+# The predictor 'radio' contains 1 zero value and therefore
+# cannot be transformed directly using Box-Cox.
+# Yeo-Johnson will be used to transform 'radio'
 
-# Although the Advertising dataset is cross-sectional rather than a time
-# series, this test was included as part of a comprehensive regression
-# diagnostic analysis to verify the independence of the residuals.
+lambda_BC_tv <- powerTransform(df_advertising$TV)
+lambda_BC_tv
 
-# H0: The residuals are not positively autocorrelated.
-# H1: The residuals are positively autocorrelated.
+lambda_BC_newspaper <- powerTransform(df_advertising$newspaper)
+lambda_BC_newspaper
 
-# lmtest Package  
-dwtest(linear_model_advertising) # DW = 2.0836, p-value = 0.7236
-dwtest(step_lm_advertising)      # DW = 2.0808, p-value = 0.7172
+lambda_yj_radio <- powerTransform(df_advertising$radio,
+                                  family = "yjPower")
+lambda_yj_radio
 
-# Since p > 0.05, H0 is not rejected for both models
-# There is no evidence of positive autocorrelation
-# among the residuals.
+# Create a new dataframe
+df_adver_x_transform <- data.frame(
+  sales = df_advertising$sales,
+  TV = df_advertising$TV,
+  radio = df_advertising$radio,
+  newspaper = df_advertising$newspaper)
+
+# TV - Box-Cox
+df_adver_x_transform$TV <- bcPower(
+  df_adver_x_transform$TV,
+  lambda_BC_tv$lambda)
+
+# Radio - Yeo-Johnson
+df_adver_x_transform$radio <- yjPower(
+  df_adver_x_transform$radio,
+  lambda_yj_radio$lambda)
+
+# Newspaper - Box-Cox
+df_adver_x_transform$newspaper <- bcPower(
+  df_adver_x_transform$newspaper,
+  lambda_BC_newspaper$lambda)
+
+# Fit a new OLS regression model using the x transformed variables.
+bc_yj_x_model <- lm(formula = sales ~ .,
+                    data = df_adver_x_transform)
+
+summary(bc_yj_x_model) # R-squared:  0.9083, p-value: < 2.2e-16
+
+sf.test(bc_yj_x_model$residuals) # W = 0.97772, p-value = 0.003859
+shapiro.test(bc_yj_x_model$residuals) # W = 0.98028, p-value = 0.006511
+dwtest(bc_yj_x_model) # DW = 2.0695, p-value = 0.6885
+ols_vif_tol(bc_yj_x_model) # No evidence of multicollinearity
+bptest(bc_yj_x_model) # p-value = 0.2109
 
 #===============================================================================
-# Multicollinearity Test
+# Interpretation
 #===============================================================================
-# The Variance Inflation Factor (VIF) and Tolerance were calculated
-# to assess the presence of multicollinearity among the independent variables.
 
-# Pairwise correlations alone cannot confirm multicollinearity because
-# a predictor may be highly correlated with a combination of other predictors
-# even when individual correlations are relatively low.
+# Applying Box-Cox transformations to TV and newspaper, together with
+# a Yeo-Johnson transformation to radio, improved the overall model fit.
 
-# VIF measures how much the variance of a regression coefficient
-# is inflated due to linear relationships among the predictors.
+# The transformed model achieved a slightly higher R-squared
+# (0.9083 vs. 0.8972), indicating a modest increase in explanatory power.
 
-# Tolerance is the reciprocal of VIF and represents the proportion
-# of variance in a predictor that is not explained by the remaining predictors.
+# The Shapiro-Francia and Shapiro-Wilk tests still rejected the null
+# hypothesis of normally distributed residuals (p < 0.05). However,
+# both test statistics moved closer to 1 compared with the baseline model,
+# indicating an improvement in residual normality.
 
-# olsrr Package
-ols_vif_tol(linear_model_advertising) # No evidence of multicollinearity
-ols_vif_tol(step_lm_advertising) # No evidence of multicollinearity
+# The Durbin-Watson test indicated no evidence of positive autocorrelation.
 
-# Common guidelines:
-# VIF < 5        -> No evidence of multicollinearity
-# 5 <= VIF < 10 -> Moderate multicollinearity
-# VIF >= 10      -> Severe multicollinearity
+# The VIF and Tolerance values indicated no evidence of multicollinearity.
 
-# Tolerance > 0.20 -> No evidence of multicollinearity
-# Tolerance < 0.10 -> Potential multicollinearity problem
+# The Breusch-Pagan test found no statistical evidence of heteroskedasticity
+# (p = 0.2109), suggesting that the residual variance is approximately constant.
 
-# Since all VIF values are below 5 and all tolerance values
-# are above 0.20, there is no evidence of multicollinearity
-# among the explanatory variables.
+# Overall, transforming the independent variables improved the model fit
+# and provided better regression diagnostics than the baseline model,
+# although the residual normality assumption remained unsatisfied.
+
+# The next step is to evaluate the full transformation model.
 
 #===============================================================================
-# Heteroskedasticity Test
+# Full Transformation
 #===============================================================================
-# The Breusch-Pagan test was performed to assess whether the
-# residual variance is constant across the fitted values.
 
-# Homoskedasticity is one of the assumptions of Ordinary Least Squares (OLS)
-# regression. When this assumption is violated (heteroskedasticity),
-# the estimated coefficients remain unbiased, but the standard errors,
-# confidence intervals, and hypothesis tests may become unreliable.
+# Replace the original dependent variable with the Box-Cox transformed version
+df_adver_x_transform$sales <- df_y_bc$sales
 
-# H0: The residual variance is constant (homoskedasticity).
-# H1: The residual variance is not constant (heteroskedasticity).
+# Fit a new OLS regression model using the x transformed variables.
+full_trans_model <- lm(formula = sales ~ .,
+                       data = df_adver_x_transform)
 
-# lmtest Package
-bptest(linear_model_advertising) # p-value = 0.1623
-bptest(step_lm_advertising)      # p-value = 0.0903
+summary(full_trans_model) # R-squared:  0.9094, p-value: < 2.2e-16
 
-# Since p > 0.05 for both models, H0 is not rejected.
-# There is no statistical evidence of heteroskedasticity,
-# suggesting that the residual variance is approximately constant.
+sf.test(full_trans_model$residuals) # W = 0.8802, p-value = 4.063e-10
+shapiro.test(full_trans_model$residuals) # W = 0.88792, p-value = 4.567e-11
+dwtest(full_trans_model) # DW = 2.0197, p-value = 0.5547
+ols_vif_tol(full_trans_model) # No evidence of multicollinearity
+bptest(full_trans_model) # p-value = 0.03016
 
-# Robust standard errors may be considered to obtain
-# more reliable statistical inference.
+#===============================================================================
+# Interpretation
+#===============================================================================
+
+# The fully transformed model showed poorer residual diagnostics,
+# with evidence of heteroskedasticity (p = 0.03016) and continued
+# deviation from normality.
+
+#===============================================================================
+# Model Selection - Stepwise
+#===============================================================================
+
+step_bc_yj_x_model <- step(bc_yj_x_model, k = 3.841459)
+
+summary(step_bc_yj_x_model) # R-squared:  0.9091, p-value: < 2.2e-16
+
+sf.test(step_bc_yj_x_model$residuals) # W = 0.87716, p-value = 2.929e-10
+shapiro.test(step_bc_yj_x_model$residuals) # W = 0.88501, p-value = 3.084e-11
+dwtest(step_bc_yj_x_model) # DW = 2.041, p-value = 0.6149
+ols_vif_tol(step_bc_yj_x_model) # No evidence of multicollinearity
+bptest(step_bc_yj_x_model) # p-value = 0.02566
 
 #===============================================================================
 # Conclusions
 #===============================================================================
 
-# The baseline multiple linear regression model explained approximately
-# 89.7% of the variance in Sales (R² = 0.8972).
+# The model with transformed explanatory variables provided the best
+# diagnostic profile before variable selection, with increased explanatory
+# power and no statistical evidence of heteroskedasticity.
 
-# The results indicate that the model has a strong overall relationship
-# with Sales, while the residual diagnostics reveal that the normality
-# assumption is not fully satisfied.
+# The Stepwise procedure removed 'newspaper', resulting in a more parsimonious
+# model with virtually the same explanatory power (R² = 0.9091).
 
-# The Durbin-Watson test found no evidence of positive autocorrelation
-# among the residuals.
+# The final model retains transformed TV and radio as the main predictors
+# of Sales, while Newspaper provided little additional explanatory value.
 
-# VIF and Tolerance values showed no evidence of problematic
-# multicollinearity among the explanatory variables.
-
-# The Breusch-Pagan test found no statistical evidence of heteroskedasticity,
-# suggesting that the residual variance is reasonably constant.
-
-# Although the model explains a large proportion of the variation in Sales,
-# the residual normality issue suggests that the model assumptions can be
-# improved. Therefore, transformation strategies will be investigated
-# in the next step.
+# After Stepwise selection, residual normality and heteroskedasticity issues
+# remained. Therefore, the final model provides a strong and parsimonious
+# representation of Sales variation, although some OLS assumptions remain
+# unsatisfied.
