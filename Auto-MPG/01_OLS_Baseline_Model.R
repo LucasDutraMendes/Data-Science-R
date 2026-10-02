@@ -10,18 +10,17 @@
 # Packages                                      
 #===============================================================================
 
-pacotes <- c("tidyverse","GGally","PerformanceAnalytics","correlation", "fastDummies",
-             "see","jtools","visreg", "Rcpp", "car", "nortest", "lmtest", "olsrr", "kableExtra")
+packages <- c("tidyverse", "GGally", "PerformanceAnalytics", "correlation",
+              "fastDummies", "see", "jtools", "visreg", "Rcpp", "car",
+              "nortest", "lmtest", "olsrr", "kableExtra")
 
-if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
-  instalador <- pacotes[!pacotes %in% installed.packages()]
-  for(i in 1:length(instalador)) {
-    install.packages(instalador, dependencies = T)
-    break()}
-  sapply(pacotes, require, character = T) 
-} else {
-  sapply(pacotes, require, character = T) 
+installer <- packages[!packages %in% installed.packages()[, "Package"]]
+
+if (length(installer) > 0) {
+  install.packages(installer, dependencies = TRUE)
 }
+
+invisible(lapply(packages, library, character.only = TRUE))
 
 #------------------------------------------------------------------------------#
 
@@ -64,21 +63,13 @@ df_auto_mpg$horsepower[df_auto_mpg$car.name == "amc concord dl"]       <- 125
 # GGally Package
 ggcorr(df_auto_mpg, label=T)
 
-# stats (R Base Package)
-cor(df_auto_mpg, use = "everything",
-    method = "pearson") # kendall or spearman
-
 # see (plot) Package
 #Interrelationships among the variables
 df_auto_mpg %>%
-  correlation(method = "pearson",) %>%
+  correlation(method = "pearson") %>%
   plot()
 
-# PerformanceAnalytics
-# Correlation matrix
-chart.Correlation((df_auto_mpg), histogram = TRUE)
-
-# # Pairwise correlations alone cannot confirm multicollinearity.
+# Pairwise correlations alone cannot confirm multicollinearity.
 
 #===============================================================================
 # N-1 DUMMIES     
@@ -111,7 +102,7 @@ df_auto_mpg_dummies %>%
 # mpg = β0 + β1·cylinders + β2·displacement + β3·horsepower + β4·weight + 
 # β5·acceleration + β6·model.year + β7·origin_2 + β8·origin_3 + ε
 
-# stats(R Base Package)
+# stats (R Base Package)
 mpg_linear_model <- lm(formula = mpg ~ . -car.name, 
                    data = df_auto_mpg_dummies)
 
@@ -127,47 +118,32 @@ confint(mpg_linear_model, level = 0.95) # significance 5%
 # Stepwise Variable Selection
 #===============================================================================
 
-mpg_step_model <- step(mpg_linear_model, k = 3.841459) #cylinders-aceleration-hp
+mpg_step_model <- step(mpg_linear_model, k = 3.841459)
+# Final variables: displacement, horsepower, weight, model.year,
+# origin_2, and origin_3.
 
 summary(mpg_step_model) # R-squared:  0.8241, p-value: < 2.2e-16
-summary(mpg_linear_model) # R-squared:  0.8252, p-value: < 2.2e-16
 
 #===============================================================================
-# Normality - Autocorrelation - Multicolinearity - Heterocedasticity - Tests
+# Regression Diagnostics
 #===============================================================================
 
 sf.test(mpg_step_model$residuals) # W = 0.98259, p-value = 0.0002004
 shapiro.test(mpg_step_model$residuals) # W = 0.98348, p-value = 0.0001634
 dwtest(mpg_step_model) # DW = 1.2637, p-value = 2.866e-14
-ols_vif_tol(mpg_step_model) # Evidence of multicollinearity was detected 
+ols_vif_tol(mpg_step_model) # Evidence of multicollinearity was detected
 bptest(mpg_step_model) # p-value = 1.56e-05
 
 #===============================================================================
-# Predict - Honda City Hatchback Touring 2025
-#===============================================================================
-
-honda_city <- data.frame(
-  displacement = 91.34,
-  horsepower = 124.3,
-  weight = 2610,
-  model.year = 86,
-  origin_2 = 0,
-  origin_3 = 1
-)
-
-prediction_km_h <- predict(mpg_step_model, newdata = honda_city)*0.425
-prediction_km_h   # 12.79 km/l
-
-#===============================================================================
-# Pre-Conclusions
+# Conclusions
 #===============================================================================
 
 # The model obtained after Stepwise variable selection explained approximately
 # 82.4% of the variance in MPG (R² = 0.8241).
 
-# The initial analysis indicates that vehicle characteristics are strongly
-# related to fuel efficiency, as the model explains a substantial proportion
-# of the variation in MPG.
+# The initial analysis indicates that vehicle characteristics are important
+# for explaining fuel efficiency, as the model explains a substantial
+# proportion of the variation in MPG.
 
 # However, the regression diagnostics revealed several assumption issues.
 # Both the Shapiro-Francia and Shapiro-Wilk tests indicated that the residuals
