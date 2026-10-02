@@ -435,10 +435,10 @@ predict(glm_disease, newdata = new_patient, type = "probs")
 # indicating that the predictors provided relevant information for distinguishing
 # between the three cardiovascular risk levels.
 
-# The model achieved an in-sample accuracy of approximately 66.8%. However,
+# The model achieved an in-sample accuracy of approximately 66.9%. However,
 # the confusion matrix revealed substantial differences in classification
-# performance across the three classes. Sensitivity was approximately 82.7%
-# for HIGH, 71.4% for INTERMEDIARY, and only 4.7% for LOW.
+# performance across the three classes. Sensitivity was approximately 82.5%
+# for HIGH, 72.0% for INTERMEDIARY, and only 4.7% for LOW.
 
 # Although the model showed very high specificity for the LOW class, its
 # sensitivity was extremely limited, indicating that the baseline model had
