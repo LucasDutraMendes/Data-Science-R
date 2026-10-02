@@ -61,3 +61,21 @@ Advertising/
 │   └── Breusch-Pagan
 │
 └── README.md
+
+```
+
+## Conclusion
+
+The analysis shows a strong relationship between advertising investment and
+Sales in this dataset. TV and Radio advertising were the main variables
+associated with higher Sales, while Newspaper advertising added little
+additional explanatory value and was removed from the final model.
+
+The final model explained approximately 91% of the variation in Sales,
+showing that TV and Radio captured most of the information available in the
+dataset.
+
+Overall, the project demonstrates how regression analysis can be used to
+identify the advertising channels most relevant to Sales while also
+highlighting the importance of evaluating model assumptions before drawing
+conclusions from statistical results.
