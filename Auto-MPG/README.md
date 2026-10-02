@@ -76,10 +76,10 @@ Auto-MPG/
 └── README.md
 ```
 
-**Conclusion**
+## Conclusion
 
 The analysis shows that vehicle characteristics are strongly related to fuel efficiency.
 
-The baseline model explained approximately 82.4% of the variation in MPG, while the transformation analysis improved residual normality and produced a model with approximately 88.9% R-squared on the Box-Cox transformed MPG scale.
+The baseline model explained approximately 82.4% of the variation in MPG, while the transformation analysis improved residual normality and produced a model with an R-squared of approximately 88.9% on the Box-Cox transformed MPG scale.
 
 The project demonstrates the use of multiple linear regression, variable selection, regression diagnostics, and transformation techniques to analyze vehicle fuel efficiency in R.
