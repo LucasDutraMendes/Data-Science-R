@@ -1,18 +1,22 @@
-# Auto MPG Dataset - Multiple Linear Regression
+# Auto MPG Dataset - Regression Models
 
 **Status:** ✅ Completed
 
-This project explores the **Auto MPG** dataset using **Multiple Linear Regression (OLS)** to analyze the relationship between vehicle characteristics and fuel efficiency.
+## Description
 
-The repository documents the development of regression models from data preparation and exploratory analysis through model diagnostics, Box-Cox transformations, variable selection, and prediction.
+This project analyzes the relationship between vehicle characteristics and fuel efficiency using multiple linear regression models in R.
 
----
+The analysis includes data cleaning, correlation analysis, dummy variable encoding, OLS regression, stepwise variable selection, regression diagnostics, and Box-Cox transformations.
 
 ## Dataset
 
-The **Auto MPG** dataset contains technical specifications for automobiles manufactured during the 1970s and early 1980s.
+The Auto MPG dataset contains information about vehicle characteristics and fuel efficiency.
 
-**Predictor Variables**
+The target variable is:
+
+- MPG
+
+Predictors include:
 
 - Cylinders
 - Displacement
@@ -22,100 +26,60 @@ The **Auto MPG** dataset contains technical specifications for automobiles manuf
 - Model Year
 - Origin
 
-**Target Variable**
-
-- MPG (Miles Per Gallon)
-
-**Car Name** is retained as an identifier but excluded from the regression models.
-
----
-
 ## Objectives
 
-- Clean and preprocess the dataset.
-- Handle missing values.
-- Explore relationships among vehicle characteristics.
-- Build a baseline Multiple Linear Regression (OLS) model.
-- Evaluate the assumptions of the regression model.
-- Improve the model using statistical transformations and variable selection.
-- Compare alternative regression specifications.
-- Interpret the statistical and analytical results.
-- Apply the final model to estimate fuel efficiency for a new vehicle.
+- Explore the relationship between vehicle characteristics and fuel efficiency.
+- Clean and prepare the dataset for regression analysis.
+- Handle missing horsepower values.
+- Encode the categorical `origin` variable using dummy variables.
+- Build a baseline multiple linear regression model.
+- Evaluate the main OLS assumptions.
+- Apply Box-Cox transformations to the dependent and independent variables.
+- Compare different transformation strategies.
+- Perform stepwise variable selection.
+- Estimate fuel efficiency for a specific vehicle profile.
 
----
-
-## Project Structure
+## Repository Structure
 
 ```text
-Auto-MPG
-│
-├── auto-mpg.csv
-├── README.md
+Auto-MPG/
 │
 ├── 01_OLS_Baseline_Model.R
-└── 02_OLS_BoxCox_Transformations.R
+│   ├── Dataset Loading
+│   ├── Data Cleaning
+│   ├── Missing Value Treatment
+│   ├── Pearson Correlation
+│   ├── N-1 Dummy Variables
+│   ├── Multiple Linear Regression (OLS)
+│   ├── Confidence Intervals
+│   ├── Stepwise Variable Selection
+│   ├── Shapiro-Wilk
+│   ├── Shapiro-Francia
+│   ├── Durbin-Watson
+│   ├── Variance Inflation Factor (VIF)
+│   └── Breusch-Pagan
+│
+├── 02_BoxCox_Model_Comparison.R
+│   ├── Box-Cox Transformation - Dependent Variable
+│   ├── Stepwise Variable Selection
+│   ├── Regression Diagnostics
+│   ├── Box-Cox Transformation - Independent Variables
+│   ├── Full Transformation
+│   ├── Stepwise Variable Selection
+│   ├── Shapiro-Wilk
+│   ├── Shapiro-Francia
+│   ├── Durbin-Watson
+│   ├── Variance Inflation Factor (VIF)
+│   ├── Breusch-Pagan
+│   └── Honda City Prediction
+│
+└── README.md
 ```
 
-## Current Workflow
+**Conclusion**
 
-### 1. Data Preparation
+The analysis shows that vehicle characteristics are strongly related to fuel efficiency.
 
-- Import dataset
-- Explore the dataset structure
-- Identify and handle missing horsepower values
-- Convert variables to appropriate data types
-- Generate descriptive statistics
+The baseline model explained approximately 82.4% of the variation in MPG, while the transformation analysis improved residual normality and produced a model with approximately 88.9% R-squared on the Box-Cox transformed MPG scale.
 
-### 2. Correlation Analysis
-
-- Pearson correlation matrix
-- Correlation plots
-- Exploration of relationships among vehicle characteristics
-
-### 3. Baseline Multiple Linear Regression (OLS)
-
-- Fit the baseline regression model
-- Estimate confidence intervals
-- Evaluate initial explanatory power
-
-### 4. Regression Diagnostics
-
-- Shapiro-Francia Normality Test
-- Shapiro-Wilk Normality Test
-- Durbin-Watson Autocorrelation Test
-- Variance Inflation Factor (VIF)
-- Tolerance
-- Breusch-Pagan Heteroskedasticity Test
-
-### 5. Box-Cox Transformation
-
-- Estimate the optimal Box-Cox transformation for MPG
-- Transform explanatory variables
-- Transform the dependent variable
-- Compare alternative transformation strategies
-
-### 6. Model Selection
-
-- Stepwise variable selection
-- Compare model specifications
-- Evaluate explanatory power and regression diagnostics
-- Select the final model
-
-### 7. Prediction
-
-- Apply the final model to a hypothetical Honda City
-- Convert the predicted MPG into km/L
-
-## Final Model
-
-The final model uses the following predictors:
-
-- Model Year
-- Horsepower
-- Weight
-- Acceleration
-- Origin
-
-The fully transformed model achieved an **R² of approximately 0.889**, explaining about 89% of the variation in MPG.
-
-Although the transformation substantially improved the normality of the residuals, autocorrelation, heteroskedasticity, and multicollinearity remained present and should be considered when interpreting the model results.
+The project demonstrates the use of multiple linear regression, variable selection, regression diagnostics, and transformation techniques to analyze vehicle fuel efficiency in R.
