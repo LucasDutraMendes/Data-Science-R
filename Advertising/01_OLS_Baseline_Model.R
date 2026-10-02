@@ -10,18 +10,15 @@
 # Packages                                      
 #===============================================================================
 
-pacotes <- c("tidyverse","GGally","PerformanceAnalytics","correlation",
-             "see","jtools","visreg", "Rcpp", "car", "nortest", "lmtest", "olsrr")
+packages <- c("GGally","PerformanceAnalytics","correlation",
+             "see","jtools", "car", "nortest", "lmtest", "olsrr")
 
-if(sum(as.numeric(!pacotes %in% installed.packages())) != 0){
-  instalador <- pacotes[!pacotes %in% installed.packages()]
-  for(i in 1:length(instalador)) {
-    install.packages(instalador, dependencies = T)
-    break()}
-  sapply(pacotes, require, character = T) 
-} else {
-  sapply(pacotes, require, character = T) 
-}
+installer <- packages[!packages %in% installed.packages()[, "Package"]]
+
+if (length(installer) > 0) {
+  install.packages(installer, dependencies = TRUE)}
+
+invisible(lapply(packages, library, character.only = TRUE))
 
 #-------------------------------------------------------------------------------
 
@@ -54,7 +51,7 @@ cor(df_advertising, use = "everything",
 # see (plot) Package
 #Interrelationships among the variables
 df_advertising |> 
-  correlation(method = "pearson",) |> 
+  correlation(method = "pearson") |> 
   plot()
 
 # stats (R Base Package)
@@ -66,7 +63,7 @@ cor(df_advertising$TV, df_advertising$sales)
 # correlation Package
 chart.Correlation((df_advertising), histogram = TRUE)
 
-# TV CORRELATES .78 WITH SALES, RADIO .58 AND NEWSPAPER .23
+# TV CORRELATES .78 WITH SALES, RADIO 0.58 AND NEWSPAPER 0.23
 # Pairwise correlations alone cannot confirm multicollinearity.
 
 #===============================================================================
@@ -95,7 +92,7 @@ summary(linear_model_advertising)$r.squared
 confint(linear_model_advertising, level = 0.95) # significance 5%
 
 #===============================================================================
-# Step-Wise
+# Stepwise Variable Selection
 #===============================================================================
 
 # Where does k come from? k = 3.841459?
@@ -118,7 +115,7 @@ export_summs(linear_model_advertising, step_lm_advertising )
 # do not follow a normal distribution.
 
 # nortest Package
-sf.test(linear_model_advertising$residuals) # p-value = 2.553e-08 
+sf.test(linear_model_advertising$residuals) # p-value = 2.553e-08
 sf.test(step_lm_advertising$residuals) # p-value = 2.698e-08
 
 # Shapiro-Francia Normality Test
@@ -136,8 +133,8 @@ sf.test(step_lm_advertising$residuals) # p-value = 2.698e-08
 # of the linear regression model follow a normal distribution.
 
 # stats (R Base Package)
-shapiro.test(linear_model_advertising$residuals) # p-value = 0.008021
-shapiro.test(step_lm_advertising$residuals)
+shapiro.test(linear_model_advertising$residuals) # p-value = 3.939e-09
+shapiro.test(step_lm_advertising$residuals)      # p-value = 4.19e-09
 
 # H0: The residuals are normally distributed.
 # H1: The residuals are not normally distributed.
@@ -186,8 +183,8 @@ dwtest(step_lm_advertising)      # DW = 2.0808, p-value = 0.7172
 # of variance in a predictor that is not explained by the remaining predictors.
 
 # olsrr Package
-ols_vif_tol(linear_model_advertising) # No evidences of multicollinearity
-ols_vif_tol(step_lm_advertising) # No evidences of multicollinearity
+ols_vif_tol(linear_model_advertising) # No evidence of multicollinearity
+ols_vif_tol(step_lm_advertising) # No evidence of multicollinearity
 
 # Common guidelines:
 # VIF < 5        -> No evidence of multicollinearity
@@ -202,7 +199,7 @@ ols_vif_tol(step_lm_advertising) # No evidences of multicollinearity
 # among the explanatory variables.
 
 #===============================================================================
-# Heterocedasticity Test
+# Heteroskedasticity Test
 #===============================================================================
 # The Breusch-Pagan test was performed to assess whether the
 # residual variance is constant across the fitted values.
@@ -219,9 +216,9 @@ ols_vif_tol(step_lm_advertising) # No evidences of multicollinearity
 bptest(linear_model_advertising) # p-value = 0.1623
 bptest(step_lm_advertising)      # p-value = 0.0903
 
-# Since p < 0.05, H0 is rejected for both models.
-# There is statistical evidence of heteroskedasticity,
-# indicating that the residual variance is not constant.
+# Since p > 0.05 for both models, H0 is not rejected.
+# There is no statistical evidence of heteroskedasticity,
+# suggesting that the residual variance is approximately constant.
 
 # Robust standard errors may be considered to obtain
 # more reliable statistical inference.
