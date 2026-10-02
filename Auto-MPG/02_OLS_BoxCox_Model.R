@@ -1,7 +1,14 @@
 #===============================================================================
-# Packages
+# Project: Auto MPG Dataset
+# Script : 02_BoxCox_Model_Comparison.R
+# Purpose: Compare different Box-Cox transformation strategies, evaluate
+#          regression assumptions, and select the final OLS regression model.
+# Author : Lucas Dutra Mendes
+#===============================================================================
+
 #===============================================================================
 # All required packages were loaded in Script 01_OLS_Baseline_Model.R
+#===============================================================================
 
 #===============================================================================
 # Box-Cox Transformation - Dependent Variable
@@ -30,7 +37,7 @@ step_mpg_bc_model <- step(mpg_bc_model, k = 3.841459)
 summary(step_mpg_bc_model) # R-squared:  0.8749, p-value: < 2.2e-16
 
 #===============================================================================
-# Normality - Autocorrelation - Multicolinearity - Heterocedasticity - Tests
+# Regression Diagnostics
 #===============================================================================
 
 sf.test(step_mpg_bc_model$residuals) # W = 0.99358, p-value = 0.08318
@@ -58,41 +65,35 @@ lambda_BC_weight
 lambda_BC_acceleration <- powerTransform(df_auto_mpg_dummies$acceleration)
 lambda_BC_acceleration
 
-# Creating a new dataframe
+# Create a new dataframe
 df_mpg_x_transform <- data.frame(
   mpg = df_auto_mpg_dummies$mpg,
-  model.year = df_auto_mpg_dummies$model.year
-)
+  model.year = df_auto_mpg_dummies$model.year)
 
 # cylinder - Box-Cox
 df_mpg_x_transform$cylinders <- bcPower(
   df_auto_mpg_dummies$cylinders,
-  lambda_BC_cylinder$lambda
-)
+  lambda_BC_cylinder$lambda)
 
 # displacement - Box-Cox
 df_mpg_x_transform$displacement <- bcPower(
   df_auto_mpg_dummies$displacement,
-  lambda_BC_displacement$lambda
-)
+  lambda_BC_displacement$lambda)
 
 # horsepower - Box-Cox
 df_mpg_x_transform$horsepower <- bcPower(
   df_auto_mpg_dummies$horsepower,
-  lambda_BC_horsepower$lambda
-)
+  lambda_BC_horsepower$lambda)
 
 # weight - Box-Cox
 df_mpg_x_transform$weight <- bcPower(
   df_auto_mpg_dummies$weight,
-  lambda_BC_weight$lambda
-)
+  lambda_BC_weight$lambda)
 
 # acceleration - Box-Cox
 df_mpg_x_transform$acceleration <- bcPower(
   df_auto_mpg_dummies$acceleration,
-  lambda_BC_acceleration$lambda
-)
+  lambda_BC_acceleration$lambda)
 
 df_mpg_x_transform$origin_2 <- df_auto_mpg_dummies$origin_2
 df_mpg_x_transform$origin_3 <- df_auto_mpg_dummies$origin_3
@@ -108,7 +109,7 @@ summary(step_bc_x_model) # R-squared:  0.8584, p-value: < 2.2e-16
 sf.test(step_bc_x_model$residuals) # W = 0.97114, p-value = 1.809e-06
 shapiro.test(step_bc_x_model$residuals) # W = 0.97286, p-value = 9.045e-07
 dwtest(step_bc_x_model) # DW = 1.4646, p-value = 1.967e-08
-ols_vif_tol(step_bc_x_model) # multicolinearity present horsepower=VIF=10.19 - weight=VIF=6.93
+ols_vif_tol(step_bc_x_model) # Multicollinearity present: horsepower = VIF 10.19; weight = VIF 6.93
 ols_test_breusch_pagan(step_bc_x_model) # Prob > Chi2 = 1.337335e-12 
 
 #===============================================================================
@@ -128,7 +129,7 @@ summary(step_full_model) # R-squared:  0.8886, p-value: < 2.2e-16
 sf.test(step_full_model$residuals) # W = 0.99277, p-value = 0.05038
 shapiro.test(step_full_model$residuals) # W = 0.9938, p-value = 0.1035
 dwtest(step_full_model) # DW = 1.5231, p-value = 4.604e-07
-ols_vif_tol(step_full_model) # multicolinearity present horsepower=VIF=10.19 - weight=VIF=6.93
+ols_vif_tol(step_full_model) # Multicollinearity present: horsepower = VIF 10.19; weight = VIF 6.93
 ols_test_breusch_pagan(step_full_model) # Prob > Chi2 = 0.005884799 
 
 #===============================================================================
@@ -143,35 +144,31 @@ honda_city_pred <- data.frame(
   
   horsepower = bcPower(
     124.3,
-    lambda_BC_horsepower$lambda
-  ),
+    lambda_BC_horsepower$lambda),
   
   weight = bcPower(
     2610,
-    lambda_BC_weight$lambda
-  ),
+    lambda_BC_weight$lambda),
   
   acceleration = bcPower(
     11.0,
-    lambda_BC_acceleration$lambda
-  ),
+    lambda_BC_acceleration$lambda),
   
   origin_2 = 0,
-  origin_3 = 1
-)
+  origin_3 = 1)
 
 # Predict MPG on the Box-Cox transformed scale.
 prediction_bc <- predict(
   step_full_model,
-  newdata = honda_city_pred
-)
+  newdata = honda_city_pred)
 
 # Inverse Box-Cox transformation to recover MPG.
 lambda <- lambda_BC_y$lambda
 
-prediction_mpg <- (
-  lambda * prediction_bc + 1
-)^(1 / lambda)
+prediction_mpg <- bcPower(
+  prediction_bc,
+  lambda = lambda,
+  inverse = TRUE)
 
 # Convert US MPG to km/L.
 prediction_km_l <- prediction_mpg * 0.425144
@@ -182,20 +179,19 @@ prediction_km_l # 12.07846
 #===============================================================================
 # Conclusion
 #===============================================================================
-# The transformation analysis improved the overall explanatory power of the
-# regression model, with the fully transformed model achieving an R² of 0.8886.
 
-# The Box-Cox transformation of the dependent variable substantially improved
-# the normality of the residuals, with the Shapiro-Wilk test no longer providing
-# evidence against the normality assumption.
+# The fully transformed and stepwise-selected model achieved an R-squared
+# of 0.8886 on the Box-Cox transformed MPG scale.
 
-# However, positive autocorrelation, heteroskedasticity, and multicollinearity
-# remained present in the final model. Therefore, the estimated coefficients
-# should be interpreted with caution.
+# The Box-Cox transformation of the dependent variable improved residual
+# normality. In the final model, the Shapiro-Wilk test provided no statistical
+# evidence against the normality assumption (p = 0.1035).
+
+# However, evidence of positive residual autocorrelation, heteroskedasticity,
+# and multicollinearity remained in the final model.
 
 # From an analytical perspective, the results indicate that vehicle
-# characteristics are strongly associated with fuel efficiency, with the final
-# model explaining a substantial proportion of the variation in MPG.
+# characteristics are strongly associated to fuel efficiency.
 
 # The model was also used to estimate the fuel efficiency of a hypothetical
 # Honda City, resulting in approximately 12.08 km/L.
