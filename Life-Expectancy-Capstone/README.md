@@ -29,7 +29,7 @@ Main variables include:
 - Happiness index
 - Outdoor activities
 - Food delivery restaurants
-- Gym price :chatgpt-content-reference{index="1"}
+- Gym price
 
 Target variable:
 
