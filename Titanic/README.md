@@ -1,147 +1,140 @@
-# Titanic Survival Analysis
+# Titanic Dataset - Logistic Regression Model
+
+**Status:** ✅ Completed
 
 ## Description
 
-This project applies binary logistic regression to the Titanic dataset
-to analyze which passenger characteristics were associated with survival
-and to evaluate the model's predictive performance.
+This project analyzes the factors associated with passenger survival using binary logistic regression in R.
 
-The analysis focuses on passenger class, sex, age, and number of siblings
-or spouses aboard, using these characteristics to identify differences
-in survival outcomes across passenger profiles.
-
-## Topics Covered
-
-- Data Preparation
-- Missing Data Treatment
-- Categorical Variables
-- Dummy Variables
-- Binary Logistic Regression
-- Stepwise Variable Selection
-- Likelihood Ratio Test
-- Model Evaluation
-- Accuracy
-- Sensitivity and Specificity
-- ROC Curve
-- AUC and Gini
-- Multicollinearity
-- VIF and Tolerance
-- Cook's Distance
-- Hosmer-Lemeshow Test
-- Model Prediction
+The analysis includes data cleaning, missing value treatment, categorical variable encoding, logistic regression, stepwise variable selection, Cook's Distance, sensitivity analysis, classification threshold selection, ROC analysis, AUC, Gini coefficient, and model evaluation.
 
 ## Dataset
 
-The project uses the Titanic dataset, containing information about
-891 passengers and 12 variables.
+The Titanic dataset contains information about passengers and their survival outcomes.
 
-The analysis uses the following variables:
+The target variable is:
 
-- `Survived` - survival outcome
-- `Pclass` - passenger class
-- `Sex` - passenger sex
-- `Age` - passenger age
-- `SibSp` - number of siblings or spouses aboard
-- `Parch` - number of parents or children aboard
+- Survived
 
-## Analysis
+Predictors used in the final model include:
 
-### Data Preparation
+- Age
+- SibSp
+- Sex
+- Passenger Class
 
-Missing values in `Age` were replaced using the median age.
+## Objectives
 
-Categorical variables such as `Sex` and `Pclass` were converted into
-dummy variables for use in the logistic regression model.
+- Explore the relationship between passenger characteristics and survival.
+- Clean and prepare the dataset for logistic regression.
+- Handle missing Age values.
+- Encode categorical variables using dummy variables.
+- Build a baseline logistic regression model.
+- Perform stepwise variable selection.
+- Identify influential observations using Cook's Distance.
+- Re-estimate the model after excluding influential observations.
+- Evaluate classification performance.
+- Determine an appropriate classification threshold.
+- Evaluate ROC, AUC, and Gini coefficient.
+- Perform individual passenger predictions.
 
-Male passengers and third-class passengers were used as the reference
-categories.
+## Repository Structure
 
-### Logistic Regression
+```text
+Titanic/
+│
+├── 01_Titanic_GLM_Model.R
+│   ├── Data Cleaning
+│   ├── Missing Value Treatment
+│   ├── Categorical Variable Encoding
+│   ├── Dummy Variables
+│   ├── Logistic Regression (GLM)
+│   ├── Stepwise Variable Selection
+│   ├── Likelihood Ratio Test
+│   ├── Cook's Distance
+│   ├── Sensitivity Analysis
+│   ├── Classification Threshold
+│   ├── Confusion Matrix
+│   ├── Sensitivity
+│   ├── Specificity
+│   ├── ROC Curve
+│   ├── AUC
+│   ├── Gini Coefficient
+│   ├── Variance Inflation Factor (VIF)
+│   ├── Tolerance
+│   ├── Hosmer-Lemeshow Goodness-of-Fit Test
+│   ├── Individual Prediction
+│   └── Conclusion
+│
+└── README.md
 
-A binary logistic regression model was developed to estimate the
-probability of survival.
+```
 
-Stepwise variable selection was then applied to obtain a more
-parsimonious model.
+## Model Evaluation - Cutoff, Sensitivity, Specificity
 
-The final model retained:
+The final model was evaluated using a classification threshold analysis.
 
-- `Pclass`
-- `Sex`
-- `Age`
-- `SibSp`
+Two approaches were used to determine the cutoff:
 
-`Parch` was removed because its exclusion did not significantly worsen
-the model fit according to the Likelihood Ratio Test.
+- Sensitivity vs. Specificity analysis identified an approximate cutoff of **0.37**.
+- Maximization of training accuracy identified a cutoff of **0.59**, with a maximum in-sample accuracy of approximately **85.6%**. :chatgpt-content-reference{index="0"} :chatgpt-content-reference{index="1"}
 
-## Model Evaluation
+At the cutoff of **0.59**:
 
-The final model achieved:
+- Sensitivity: **71.6%**
+- Specificity: **93.8%**
 
-- AUC: `0.899`
-- Gini: `0.798`
-- Maximum training accuracy: `0.8561237`
-- Classification cutoff: `0.59`
+At the cutoff of **0.37**:
 
-VIF and Tolerance values showed no evidence of problematic
-multicollinearity.
+- Sensitivity: **78.7%**
+- Specificity: **78.9%** :chatgpt-content-reference{index="2"}
 
-The Hosmer-Lemeshow test indicated evidence of lack of fit, suggesting
-that the predicted probabilities should be interpreted with caution.
+These metrics represent **in-sample performance** because the predictions were evaluated on the same observations used to fit the final model. :chatgpt-content-reference{index="3"}
 
-## Key Findings
+## ROC Curve
 
-The analysis indicates that survival was not evenly distributed across
-passenger profiles.
+The ROC curve was used to evaluate the model's discriminatory ability across different classification thresholds.
 
-Female passengers and passengers from higher classes were more likely
-to survive, while increasing age and the number of siblings or spouses
-aboard were associated with lower survival probability, holding the
-other variables constant.
+The model achieved an **AUC of 0.899**, indicating good in-sample discriminatory ability.
 
-These results show that demographic and socioeconomic characteristics
-in the dataset were strongly associated with different survival
-outcomes.
+The corresponding **Gini coefficient was approximately 0.798**. :chatgpt-content-reference{index="4"}
 
-## Example Prediction
+## Variance Inflation Factor (VIF) and Tolerance
 
-The final model can also be used to estimate survival probability for
-individual passenger profiles.
+Multicollinearity was evaluated using VIF and Tolerance.
 
-| Passenger | Predicted Probability | Classification |
-|-----------|----------------------:|----------------|
-| Jack      | 7.415%                | Non-survivor   |
-| Rose      | 97.50%                | Survivor       |
+The model showed no evidence of problematic multicollinearity, with VIF values below 5 and tolerance values above 0.20. :chatgpt-content-reference{index="5"}
 
-The classification uses a probability cutoff of `0.59`.
+## Hosmer-Lemeshow Goodness-of-Fit Test
+
+The Hosmer-Lemeshow test resulted in:
+
+- X-squared: **59.172**
+- Degrees of freedom: **8**
+- p-value: **6.774e-10**
+
+The result provides evidence of lack of fit, indicating that the predicted probabilities should be interpreted with caution. :chatgpt-content-reference{index="6"}
+
+## Individual Prediction
+
+The final model was used to estimate survival probabilities for two hypothetical passengers.
+
+| Passenger | Predicted Survival Probability | Prediction |
+|---|---:|---|
+| Jack | 7.41% | Non-survivor |
+| Rose | 97.50% | Survivor |
+
+The classification threshold used for these predictions was **0.59**. :chatgpt-content-reference{index="7"}
 
 ## Conclusion
 
-The analysis shows that survival on the Titanic was strongly related to
-passenger profile.
+The analysis indicates that passenger class, sex, age, and number of siblings or spouses aboard were relevant factors associated with survival.
 
-Women and passengers traveling in higher classes had higher survival
-probabilities, while older passengers and those traveling with more
-siblings or spouses had lower predicted survival probabilities.
+Female passengers and passengers from higher classes were more likely to survive, while increasing age and the number of siblings or spouses aboard were associated with lower survival probability, holding the other variables constant.
 
-The model performed well at distinguishing between survivors and
-non-survivors, achieving an AUC of 0.899. However, the Hosmer-Lemeshow test
-suggested that the predicted probabilities were not perfectly aligned with
-the observed outcomes.
+The model showed good in-sample discriminatory ability with an AUC of **0.899**, although the Hosmer-Lemeshow test indicated evidence of lack of fit. :chatgpt-content-reference{index="8"}
 
-We also checked the influence of individual observations. Although some
-passengers had a noticeable impact on the model estimates, the main
-relationships remained consistent when these observations were excluded.
-
-Overall, the analysis shows that survival was far from evenly distributed
-across passenger profiles and demonstrates how statistical modeling can
-turn passenger data into meaningful insights.
-
-## Files
-
-- `01_Titanic_GLM.R` - Data preparation, logistic regression,
-  model evaluation, diagnostics, and predictions.
-- `titanic.csv` - Titanic dataset.
+Sensitivity analysis showed that the direction and statistical significance of the main predictors remained consistent after excluding observations flagged by Cook's Distance, although some coefficient magnitudes changed. :chatgpt-content-reference{index="9"}
 
 ## Author
 
