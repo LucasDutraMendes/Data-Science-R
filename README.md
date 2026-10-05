@@ -1,9 +1,3 @@
-<p align="center">
-  <img src="assets/data-science-r-banner.svg"
-       alt="Data Science with R"
-       width="100%">
-</p>
-
 # Data Science with R
 
 ## Overview
