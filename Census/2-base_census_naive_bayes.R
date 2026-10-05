@@ -1,19 +1,63 @@
+#===============================================================================
+# Project: Census Dataset
+# Script : 02_Naive_Bayes_Model.R
+# Purpose: Build and evaluate a Naive Bayes classification model using
+#          the preprocessed Census dataset.
+# Author : Lucas Dutra Mendes
+#===============================================================================
 
-                    #Naive Bayes
-#-------------------------------------------------------------#
-#install.packages("e1071")
-library(e1071)
+#===============================================================================
+# Packages
+#===============================================================================
 
-classifier <- naiveBayes(training_base[-15], training_base$income) #training
-classifier
+packages <- c("e1071", "caret")
 
-prediction <- predict(classifier, newdata = test_base[-15]) #predict
-prediction #scores
+installer <- packages[!packages %in% installed.packages()[, "Package"]]
 
-matrix_conf <- table(test_base[,15], prediction)
-matrix_conf #naive bayes score
+if (length(installer) > 0) {
+  install.packages(installer, dependencies = TRUE)}
 
-#install.packages('caret')
-library(caret)
-confusionMatrix(matrix_conf) #Accuracy : 0.8286
-#-------------------------------------------------------------#
+invisible(lapply(packages, library, character.only = TRUE))
+
+#===============================================================================
+# Naive Bayes Model
+#===============================================================================
+
+naive_bayes_model <- naiveBayes(
+  training_base[, -15],
+  training_base$income)
+
+naive_bayes_model
+
+#===============================================================================
+# Prediction
+#===============================================================================
+
+prediction <- predict(
+  naive_bayes_model,
+  newdata = test_base[, -15])
+
+prediction
+
+#===============================================================================
+# Confusion Matrix
+#===============================================================================
+
+confusion_matrix <- table(
+  test_base[, 15],
+  prediction)
+
+confusion_matrix
+
+#===============================================================================
+# Model Evaluation
+#===============================================================================
+
+confusionMatrix(confusion_matrix) # Accuracy: 0.8286
+
+#===============================================================================
+# Conclusion
+#===============================================================================
+
+# The Naive Bayes model achieved an accuracy of approximately 82.9%
+# on the test dataset.
