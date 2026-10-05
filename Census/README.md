@@ -78,6 +78,8 @@ Census/
 │   ├── Confusion Matrix
 │   ├── Model Evaluation
 │   └── Conclusion
+│
+└── README.md
 
 ```
 
@@ -133,5 +135,3 @@ The project demonstrates the importance of data preprocessing, model selection, 
 ## Author
 
 Lucas Dutra Mendes
-│
-└── README.md
