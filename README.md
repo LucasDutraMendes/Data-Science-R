@@ -1,5 +1,7 @@
 <p align="center">
-  <img src="https://SEU-LINK/banner-blue.png" width="100%">
+  <img src="assets/data-science-r-banner.svg"
+       alt="Data Science with R"
+       width="100%">
 </p>
 
 # Data Science with R
