@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://SEU-LINK/banner-blue.png" width="100%">
+</p>
+
 # Data Science with R
 
 ## Overview
