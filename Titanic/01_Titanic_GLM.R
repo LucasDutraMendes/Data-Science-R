@@ -106,7 +106,8 @@ step_titanic <- step(object = glm_model,
 
 summary(step_titanic) # AIC: 803.23
 
-# LogLikeliHood - the higher LogLik the better, however, this cannot determine the best model yet
+# LogLikeliHood - Log-Likelihood - higher values indicate better model fit,
+# but this alone does not determine the best model.
 logLik(glm_model) # -395.3901 (df=7)
 logLik(step_titanic) # -395.6149 (df=6)
 
@@ -116,7 +117,8 @@ lrtest(glm_model, step_titanic)
 export_summs(glm_model, step_titanic, scale = F,
              digits = 4)
 # AIC - glm_model = 804.7801     step_titanic = 803.2298  
-# AIC the smaller the better - step_titanic is smaller and therefore the best choice
+# Lower AIC indicates a better trade-off between model fit and complexity.
+# step_titanic has the lower AIC.
 
 #===============================================================================
 # Cook's Distance
@@ -153,23 +155,26 @@ titanic_influential <- update(step_titanic,
 summary(titanic_influential) # AIC 625.19
 logLik(titanic_influential) # -306.5951 (df=6)
 
+# Predictions are evaluated on the same observations used to fit
+# the final model. Therefore, these metrics represent in-sample
+# performance and should not be interpreted as out-of-sample performance.
 #===============================================================================
-# Accuracy  -  CutOff  -  Sensibility  -  Specificity 
+# Model Evaluation - Cutoff, Sensitivity, Specificity
 #===============================================================================
 # First method we have to define the cutoff 
 
-# 1 - prediction function package ROCR - our goal her is to build an object
+# 1 - prediction function package ROCR - our goal here is to build an object
 # with the necessary data to plot the ROC later
 predict_roc <- prediction(predictions = titanic_influential$fitted.values,
   labels = titanic_dummies[-influential, ]$Survived)
 
-# 2 - performance function package ROCR - extract sensibility to plot
+# 2 - performance function package ROCR - extract Sensitivity to plot
 roc_curve <- performance(predict_roc, measure = "sens") 
 
 # 3 - extracting sensitivity values
 sensitivity_roc <- roc_curve@y.values[[1]] 
 
-# 4 - performance function package ROCR - extract sensibility to plot 
+# 4 - performance function package ROCR - extract Specificity to plot 
 specificity_roc <- performance(predict_roc, measure = "spec") 
 
 # 5 - extracting specificity values
@@ -216,8 +221,7 @@ cutoffs <- seq(0, 1, by = 0.01)
 
 accuracy <- sapply(cutoffs, function(cutoff) {
   pred_class <- ifelse(titanic_influential$fitted.values >= cutoff, 1, 0)
-  mean(pred_class == df_titanic[-influential, ]$Survived)
-})
+  mean(pred_class == df_titanic[-influential, ]$Survived)})
 
 cutoffs[which.max(accuracy)] # 0.59
 max(accuracy)   # 0.8561237
@@ -281,7 +285,7 @@ tolerance
 # Hosmer-Lemeshow Goodness-of-Fit Test
 #===============================================================================
 
-# ResouceSelection package
+# ResourceSelection package
 hoslem.test(df_titanic[-influential, ]$Survived,
   fitted(titanic_influential), g = 10)
 
@@ -294,11 +298,10 @@ hoslem.test(df_titanic[-influential, ]$Survived,
 
 jack <- data.frame(
   Age = 22,       
-  SibSp = 0,      # traveling alone, no friends or siblings
+  SibSp = 0,      # no siblings or spouse
   Pclass_1 = 0,   # 3rd class
   Pclass_2 = 0,
   Sex_female = 0)  #men 
-
 
 rose <- data.frame(
   Age = 17,
@@ -329,14 +332,13 @@ predict(
 # were associated with lower survival probability, holding the other variables
 # constant.
 
-# These results highlight a strong relationship between passenger profile and
-# survival outcomes, suggesting that survival during the Titanic disaster was
-# not evenly distributed across the passenger population.
+# These results highlight a strong relationship between passenger characteristics
+# and survival outcomes in the dataset.
 
-# From a predictive perspective, the model showed good discriminatory ability
-# (AUC = 0.899), although the Hosmer-Lemeshow test indicated evidence of lack
-# of fit, meaning that the predicted probabilities should be interpreted with
-# caution.
+# From a predictive perspective, the model showed good in-sample discriminatory
+# ability (AUC = 0.899), although the Hosmer-Lemeshow test indicated evidence
+# of lack of fit, meaning that the predicted probabilities should be interpreted
+# with caution.
 
 # Overall, the analysis shows how passenger characteristics in the dataset
 # can be used to identify groups with substantially different survival
@@ -348,7 +350,7 @@ predict(
 # indicating that these observations influenced the estimated coefficients.
 
 #------------------------------------------------------------------------------#
-# Second Graph - Optional: custom ROC visualization                            #
+# Custom ROC Visualization
 #------------------------------------------------------------------------------#
 
 # 1. Generate ROC curve data
@@ -388,7 +390,7 @@ p <- ggplot() +
   scale_y_continuous(expand = c(0, 0)) +
   # Add descriptive English annotations inside the plot space
   annotate("text", x = 0.70, y = 0.45, label = "Gini", color = "white", fontface = "bold", size = 4) +
-  annotate("text", x = 0.30, y = 0.20, label = "Random Guess (0.50) + \n Gini = AUC", color = "white", fontface = "bold", size = 4) +
+  annotate("text", x = 0.30, y = 0.20, label = "Random Guess (0.50)", color = "white", fontface = "bold", size = 4) +
   annotate("text", x = 0.85, y = 0.90, label = "Error (1 - AUC)\n(White Area)", color = "black", fontface = "italic", size = 4) +
   # Main titles and axis labels in English
   labs(
